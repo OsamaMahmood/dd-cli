@@ -144,7 +144,7 @@ class TestApi(TestCase):
 
         self.assertEqual(id, self.product_id)
         url = 'https://example.com/api/v2/products/'
-        payload = '{"name": "product", "description": "product", "prod_type": 1}'
+        payload = '{"name": "product", "description": "product", "prod_type": 1, "enable_simple_risk_acceptance": true}'
         mockPost.assert_called_once_with(url, headers=self.header, data=payload, verify=True)
         response.raise_for_status.assert_called_once()
 
