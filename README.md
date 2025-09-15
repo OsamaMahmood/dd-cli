@@ -1,6 +1,6 @@
 # dd-import
 
-*As we no longer work with DefectDojo, this repository has been archived.*
+*This is a continuation and enhancement of the original dd-import project.*
 
 > A utility to (re-)import findings and language data into [DefectDojo](https://www.defectdojo.org/)
 
@@ -31,7 +31,7 @@ The command `dd-import-languages` imports languages data that have been gathered
 
 **Docker**
 
-Docker images can be found in https://hub.docker.com/r/maibornwolff/dd-import.
+Docker images can be found in the releases section of this repository.
 
 A re-import of findings can be started with
 
@@ -53,6 +53,18 @@ Please note you have to set the environment variables as described below and mou
 ### Parameters
 
 All parameters need to be provided as environment variables:
+
+## 🚀 Enhanced Features (NEW!)
+
+**Auto-Create Workflow**: Set `DD_AUTO_CREATE_CONTEXT=true` to enable one-call workflow that automatically creates all resources!
+
+**Rich Metadata**: Add business context with criticality levels, platforms, lifecycle stages, and comprehensive tagging.
+
+**Smart Workflow Selection**: Automatically chooses between traditional multi-call workflow and new auto-create workflow.
+
+## Environment Variables
+
+### Core Parameters (Required)
 
 | Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
 |-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
@@ -88,9 +100,82 @@ All parameters need to be provided as environment variables:
 | DD_EXTRA_HEADER_2         | Optional           | Optional         | If extra header key is needed for auth in wafs or similar |
 | DD_EXTRA_HEADER_2_VALUE   | Optional           | Optional         | The corresponding value for extra header key |
 
-### Usage
+### 🚀 Enhanced Auto-Create Parameters (NEW!)
 
-This snippet from a [GitLab CI pipeline](.gitlab-ci.yml) serves as an example how `dd-import` can be integrated to upload data during build and deploy using the docker image:
+| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
+|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
+| DD_AUTO_CREATE_CONTEXT              | Optional           | -                | **GAME CHANGER!** `true` = Single API call creates all resources. `false` = Traditional workflow (default) |
+| DD_DEDUPLICATION_ON_ENGAGEMENT      | Optional           | -                | `true` = Scope finding deduplication to engagement level. Default: `false`                       |
+
+### 📊 Enhanced Product Metadata (NEW!)
+
+| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
+|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
+| DD_PRODUCT_DESCRIPTION              | Optional           | Optional         | Detailed product description (falls back to product name)                                        |
+| DD_PRODUCT_BUSINESS_CRITICALITY     | Optional           | Optional         | `very high`, `high`, `medium`, `low`, `very low`, `none`                                          |
+| DD_PRODUCT_PLATFORM                 | Optional           | Optional         | `web service`, `desktop`, `iot`, `mobile`, `web`                                                  |
+| DD_PRODUCT_LIFECYCLE                | Optional           | Optional         | `construction`, `production`, `retirement`                                                        |
+| DD_PRODUCT_ORIGIN                   | Optional           | Optional         | `third party library`, `purchased`, `contractor`, `internal`, `open source`, `outsourced`        |
+| DD_PRODUCT_INTERNET_ACCESSIBLE      | Optional           | Optional         | `true`/`false` - Is the product internet accessible?                                             |
+| DD_PRODUCT_EXTERNAL_AUDIENCE        | Optional           | Optional         | `true`/`false` - Does the product have external users?                                           |
+| DD_PRODUCT_TAGS                     | Optional           | Optional         | Comma-separated tags, e.g., `security,webapp,critical`                                           |
+
+### 🎯 Enhanced Engagement Metadata (NEW!)
+
+| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
+|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
+| DD_ENGAGEMENT_DESCRIPTION           | Optional           | -                | Detailed engagement description                                                                   |
+| DD_ENGAGEMENT_VERSION               | Optional           | -                | Version of the product being tested                                                               |
+| DD_ENGAGEMENT_STATUS                | Optional           | -                | `Not Started`, `Blocked`, `Cancelled`, `Completed`, `In Progress` (default), `On Hold`, `Waiting for Resource` |
+| DD_ENGAGEMENT_THREAT_MODEL          | Optional           | -                | `true`/`false` - Include threat modeling activities                                              |
+| DD_ENGAGEMENT_API_TEST              | Optional           | -                | `true`/`false` - Include API testing                                                             |
+| DD_ENGAGEMENT_PEN_TEST              | Optional           | -                | `true`/`false` - Include penetration testing                                                     |
+| DD_ENGAGEMENT_TAGS                  | Optional           | -                | Comma-separated engagement tags                                                                   |
+
+### ⚙️ Enhanced Finding Controls (NEW!)
+
+| Parameter                               | Re-import findings | Import languages | Remark                                                                                        |
+|-----------------------------------------|:------------------:|:----------------:|-----------------------------------------------------------------------------------------------|
+| DD_APPLY_TAGS_TO_FINDINGS               | Optional           | -                | `true`/`false` - Apply tags to imported findings                                             |
+| DD_APPLY_TAGS_TO_ENDPOINTS              | Optional           | -                | `true`/`false` - Apply tags to endpoints                                                     |
+| DD_CREATE_FINDING_GROUPS_FOR_ALL_FINDINGS | Optional        | -                | `true` (default)/`false` - Create finding groups even for single findings                    |
+| DD_FINDING_TAGS                         | Optional           | -                | Comma-separated tags to apply to findings, e.g., `automated,security,scan`                  |
+
+### Usage Examples
+
+#### 🚀 NEW: Auto-Create Workflow (Recommended)
+
+The enhanced auto-create workflow simplifies integration by handling all resource creation in a single API call:
+
+```yaml
+# Enhanced GitLab CI with Auto-Create
+variables:
+  DD_AUTO_CREATE_CONTEXT: "true"  # 🎯 Enable magic auto-creation!
+  DD_PRODUCT_TYPE_NAME: "Web Applications"
+  DD_PRODUCT_NAME: "E-Commerce Platform"
+  DD_PRODUCT_DESCRIPTION: "Customer-facing e-commerce application"
+  DD_PRODUCT_BUSINESS_CRITICALITY: "high"
+  DD_PRODUCT_PLATFORM: "web"
+  DD_PRODUCT_TAGS: "security,webapp,critical"
+  DD_ENGAGEMENT_NAME: "Release 2.1 Security Testing"
+  DD_ENGAGEMENT_DESCRIPTION: "Comprehensive security testing for major release"
+  DD_APPLY_TAGS_TO_FINDINGS: "true"
+  DD_FINDING_TAGS: "automated,trivy,container"
+
+upload_security_scan:
+  stage: upload
+  image: osamamahmood/dd-import:latest
+  variables:
+    DD_TEST_NAME: "Container Security Scan"
+    DD_TEST_TYPE_NAME: "Trivy Scan"
+    DD_FILE_NAME: "trivy.json"
+  script:
+    - dd-reimport-findings.sh  # ✨ Single command, everything auto-created!
+```
+
+#### 📋 Traditional Workflow (Still Supported)
+
+This snippet from a [GitLab CI pipeline](.gitlab-ci.yml) serves as an example how `dd-import` can be integrated using the traditional multi-step approach:
 
 ```yaml
 variables:
@@ -112,7 +197,7 @@ trivy:
     - wget --no-verbose https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -O - | tar -zxvf -
   allow_failure: true
   script:
-    - ./trivy --exit-code 0 --no-progress -f json -o trivy.json maibornwolff/dd-import:latest
+    - ./trivy --exit-code 0 --no-progress -f json -o trivy.json osamamahmood/dd-import:latest
   artifacts:
     paths:
     - trivy.json
@@ -136,7 +221,7 @@ cloc:
 
 upload_trivy:
   stage: upload
-  image: maibornwolff/dd-import:latest
+  image: osamamahmood/dd-import:latest
   needs:
     - job: trivy
       artifacts: true  
@@ -149,7 +234,7 @@ upload_trivy:
     - dd-reimport-findings.sh
 
 upload-cloc:
-  image: maibornwolff/dd-import:latest
+  image: osamamahmood/dd-import:latest
   needs:
     - job: cloc
       artifacts: true  
@@ -170,6 +255,45 @@ upload-cloc:
 
 Another example, showing how to use `dd-import` within a GitHub Action, can be found in [dd-import_example.yml](.github/workflows/dd-import_example.yml).
 
+## 🚀 What's New in This Version
+
+This enhanced version of `dd-import` introduces powerful new capabilities while maintaining 100% backward compatibility:
+
+### ✨ Major Enhancements
+
+- **🎯 Auto-Create Workflow**: Single API call creates all resources automatically (`DD_AUTO_CREATE_CONTEXT=true`)
+- **📊 Rich Metadata**: Add business context with criticality, platform, lifecycle, and comprehensive tagging
+- **🔄 Smart Workflow Selection**: Automatically chooses optimal workflow based on configuration
+- **⚡ Retry Logic**: Exponential backoff for transient failures ensures reliable imports
+- **✅ Enhanced Validation**: Comprehensive validation with helpful error messages
+- **🏷️ Advanced Tagging**: Tag products, engagements, tests, and findings for better organization
+- **🎛️ Finding Controls**: Fine-grained control over finding grouping and tag application
+
+### 🔧 Technical Improvements
+
+- **25+ New Environment Variables**: Extensive configuration options for all DefectDojo features
+- **Robust Error Handling**: Better error messages and retry mechanisms
+- **Input Validation**: Validates enum values and required fields before API calls
+- **Response Validation**: Ensures API responses contain expected data
+- **Performance Optimized**: Auto-create reduces API calls from 5+ to 1
+
+### 📈 Migration Benefits
+
+**Before (Traditional)**:
+- Multiple API calls required (5+ calls)
+- Manual resource management
+- Basic metadata only
+- No retry logic
+- Generic error messages
+
+**After (Enhanced)**:
+- Optional single API call workflow
+- Automatic resource creation
+- Rich business metadata
+- Robust retry mechanisms  
+- Comprehensive validation and helpful error messages
+- **100% backward compatible** - existing configs work unchanged!
+
 ## Developer guide
 
 ### Testing
@@ -177,6 +301,12 @@ Another example, showing how to use `dd-import` within a GitHub Action, can be f
 `./bin/runUnitTests.sh` - Runs the unit tests and reports the test coverage.
 
 `./bin/runDockerUnitTests.sh` - First creates the docker image and then starts a docker container in which the unit tests are executed.
+
+## Acknowledgments
+
+This project builds upon the excellent work of the original `dd-import` tool created by **Stefan Fleckenstein** at **MaibornWolff GmbH**. The original project can be found at [https://github.com/MaibornWolff/dd-import](https://github.com/MaibornWolff/dd-import).
+
+Special thanks to Stefan and the MaibornWolff team for creating this valuable DefectDojo integration tool and making it available to the community. This enhanced version extends their foundation with additional features while maintaining full backward compatibility.
 
 ## License
 
