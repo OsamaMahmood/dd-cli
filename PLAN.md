@@ -49,6 +49,9 @@ These are locked-in defaults — flag any you want changed before scaffolding st
 | D12 | Docs | **mkdocs-material**, command reference auto-generated from Typer via `mkdocs-click` | Single source of truth, deploys to GitHub Pages. |
 | D13 | Versioning | **SemVer**. v0.x during scaffolding, v1.0 = legacy parity, v2.0 = full mgmt CLI | Predictable for downstream pipelines. |
 | D14 | License | **3-Clause BSD** (unchanged from upstream) | Honors original license terms. |
+| D15 | Docker base | **`python:3.12-slim`** | No musl quirks; ~30 MB larger than alpine but compatible with every scanner JSON parser we've seen. |
+| D16 | Homebrew tap | **`OsamaMahmood/homebrew-tap`** (new repo) | Created in M5 alongside the formula. |
+| D17 | Generated client regen cadence | **On-demand**, when a new endpoint is needed | Avoids churn; minor DD releases don't force a regen. |
 
 ## 5. Architecture
 
@@ -512,12 +515,14 @@ source = ["dd_cli"]
 omit = ["src/dd_cli/_client/*"]
 ```
 
-## Appendix C — Open questions
+## Appendix C — Resolved questions
 
-1. **Docker base image**: stay on `python:3.12-alpine` (small but musl quirks with some scanner JSON parsers) or move to `python:3.12-slim` (~30 MB larger, but no musl issues)? Recommend **slim**.
-2. **Homebrew tap location**: new repo `OsamaMahmood/homebrew-tap` or repurpose existing one? Need to check.
-3. **Telemetry**: opt-in anonymous usage (helps prioritize commands)? Default off, well documented. Decide before v2.0.
-4. **Generated client regeneration cadence**: on every DefectDojo minor release, or only when we need a new endpoint? Recommend **on-demand** to avoid churn.
+Resolved 2026-05-01:
+
+1. **Docker base image** → `python:3.12-slim`. See D15.
+2. **Homebrew tap location** → new repo `OsamaMahmood/homebrew-tap`. See D16.
+3. **Telemetry** → out of scope for v2.0; revisit later if there's demand. No telemetry code ships in v2.
+4. **Generated client regeneration cadence** → on-demand, when a new endpoint is needed. See D17.
 
 ---
 
