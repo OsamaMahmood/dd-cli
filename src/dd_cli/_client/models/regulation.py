@@ -1,0 +1,123 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..models.regulation_category import RegulationCategory
+from ..types import UNSET, Unset
+
+T = TypeVar("T", bound="Regulation")
+
+
+@_attrs_define
+class Regulation:
+    """
+    Attributes:
+        id (int):
+        name (str): The name of the regulation.
+        acronym (str): A shortened representation of the name.
+        category (RegulationCategory): The subject of the regulation.
+
+            * `privacy` - Privacy
+            * `finance` - Finance
+            * `education` - Education
+            * `medical` - Medical
+            * `corporate` - Corporate
+            * `security` - Security
+            * `government` - Government
+            * `other` - Other
+        jurisdiction (str): The territory over which the regulation applies.
+        description (str | Unset): Information about the regulation's purpose.
+        reference (str | Unset): An external URL for more information.
+    """
+
+    id: int
+    name: str
+    acronym: str
+    category: RegulationCategory
+    jurisdiction: str
+    description: str | Unset = UNSET
+    reference: str | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        id = self.id
+
+        name = self.name
+
+        acronym = self.acronym
+
+        category = self.category.value
+
+        jurisdiction = self.jurisdiction
+
+        description = self.description
+
+        reference = self.reference
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "id": id,
+                "name": name,
+                "acronym": acronym,
+                "category": category,
+                "jurisdiction": jurisdiction,
+            }
+        )
+        if description is not UNSET:
+            field_dict["description"] = description
+        if reference is not UNSET:
+            field_dict["reference"] = reference
+
+        return field_dict
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        id = d.pop("id")
+
+        name = d.pop("name")
+
+        acronym = d.pop("acronym")
+
+        category = RegulationCategory(d.pop("category"))
+
+        jurisdiction = d.pop("jurisdiction")
+
+        description = d.pop("description", UNSET)
+
+        reference = d.pop("reference", UNSET)
+
+        regulation = cls(
+            id=id,
+            name=name,
+            acronym=acronym,
+            category=category,
+            jurisdiction=jurisdiction,
+            description=description,
+            reference=reference,
+        )
+
+        regulation.additional_properties = d
+        return regulation
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

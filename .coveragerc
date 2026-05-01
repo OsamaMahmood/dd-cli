@@ -1,3 +1,0 @@
-[run]
-data_file = ./coverage_data/.coverage
-source = dd_import

@@ -1,0 +1,10 @@
+from enum import Enum
+
+
+class CredentialHttpAuthenticationType3Type1(str, Enum):
+    BASIC = "Basic"
+    NTLM = "NTLM"
+    VALUE_2 = ""
+
+    def __str__(self) -> str:
+        return str(self.value)

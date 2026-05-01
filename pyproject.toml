@@ -161,8 +161,8 @@ markers = [
 source = ["dd_cli"]
 branch = true
 omit = [
-    "src/dd_cli/_client/*",
-    "tests/*",
+    "*/dd_cli/_client/*",
+    "*/tests/*",
 ]
 
 [tool.coverage.report]
