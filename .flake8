@@ -7,4 +7,12 @@ ignore =
 
 exclude =
     .git,
-    __pycache__
+    __pycache__,
+    src,
+    tests,
+    build,
+    dist,
+    .venv,
+    .mypy_cache,
+    .ruff_cache,
+    .pytest_cache
