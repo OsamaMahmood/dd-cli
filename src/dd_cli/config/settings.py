@@ -19,6 +19,7 @@ import tomli_w
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from dd_cli.config.legacy_env import legacy_extra_headers
 from dd_cli.config.paths import default_config_path
 from dd_cli.errors import ConfigError
 
@@ -147,5 +148,9 @@ def load_profile(
         overrides = _EnvOverrides().model_dump(exclude_none=True)
         if overrides:
             profile = profile.model_copy(update=overrides)
+        legacy_headers = legacy_extra_headers()
+        if legacy_headers:
+            merged = {**profile.extra_headers, **legacy_headers}
+            profile = profile.model_copy(update={"extra_headers": merged})
 
     return profile
