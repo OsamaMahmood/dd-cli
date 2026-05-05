@@ -38,6 +38,9 @@ dependencies = [
     "tomli-w>=1.0",
     "PyYAML>=6.0",
     "orjson>=3.10",
+    # Required by the vendored generated client in src/dd_cli/_client/.
+    "attrs>=23.2",
+    "python-dateutil>=2.9",
 ]
 
 [project.optional-dependencies]
@@ -70,7 +73,7 @@ Issues = "https://github.com/OsamaMahmood/dd-import-v2/issues"
 Changelog = "https://github.com/OsamaMahmood/dd-import-v2/blob/main/CHANGELOG.md"
 
 [project.scripts]
-dd = "dd_cli.cli.app:app"
+dd = "dd_cli.cli.app:main"
 # Backward-compatibility shims for the legacy dd-import package. Wired in M4.
 # dd-reimport-findings = "dd_cli.cli.legacy:dd_reimport_findings_main"
 # dd-import-languages  = "dd_cli.cli.legacy:dd_import_languages_main"
