@@ -9,7 +9,13 @@ from rich.console import Console
 
 from dd_cli.cli.config_cmd import config_app
 from dd_cli.cli.configure import configure
+from dd_cli.cli.engagements import engagements_app
+from dd_cli.cli.findings import findings_app
 from dd_cli.cli.ping import ping
+from dd_cli.cli.product_types import product_types_app
+from dd_cli.cli.products import products_app
+from dd_cli.cli.tests_cmd import tests_app
+from dd_cli.cli.users import users_app
 from dd_cli.errors import DDCliError
 from dd_cli.output import OutputFormat
 from dd_cli.version import __version__
@@ -27,6 +33,12 @@ app = typer.Typer(
 )
 
 app.add_typer(config_app)
+app.add_typer(products_app)
+app.add_typer(product_types_app)
+app.add_typer(engagements_app)
+app.add_typer(tests_app)
+app.add_typer(findings_app)
+app.add_typer(users_app)
 app.command("configure", help="Interactively create or update a profile.")(configure)
 app.command("ping", help="Verify connectivity and authentication against DefectDojo.")(ping)
 

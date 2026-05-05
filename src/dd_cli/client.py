@@ -86,18 +86,24 @@ class DefectDojoClient:
     # ------------------------------------------------------------------ #
 
     def whoami(self) -> dict[str, Any]:
-        """Hit `/api/v2/user_profile/` to verify connectivity + auth.
+        """Hit `/api/v2/user_profile/` to verify connectivity + auth."""
+        return self.get("/api/v2/user_profile/")
 
-        Returns the parsed JSON body. Raises a typed `DDCliError` on failure.
+    def get(self, path: str, *, params: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """GET a single resource and return the parsed JSON body.
+
+        Raises a typed `DDCliError` on failure. For paginated list endpoints
+        prefer `paginate()`, which streams results across pages.
         """
+        query = dict(params) if params else None
 
         def _call() -> httpx.Response:
-            return self._raw.get_httpx_client().get("/api/v2/user_profile/")
+            return self._raw.get_httpx_client().get(path, params=query)
 
         response = self._with_retry(_call)
         body = self._parse_response(response)
         if not isinstance(body, Mapping):
-            raise APIError("Unexpected response shape from /user_profile/")
+            raise APIError(f"Unexpected response shape from {path}")
         return dict(body)
 
     def paginate(
