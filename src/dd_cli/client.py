@@ -120,7 +120,9 @@ class DefectDojoClient:
             current_url = next_url
             current_query = query
 
-            def _call(url: str = current_url, q: Mapping[str, Any] = current_query) -> httpx.Response:
+            def _call(
+                url: str = current_url, q: Mapping[str, Any] = current_query
+            ) -> httpx.Response:
                 return self._raw.get_httpx_client().get(url, params=q if q else None)
 
             response = self._with_retry(_call)
@@ -160,9 +162,7 @@ class DefectDojoClient:
                 continue
             except httpx.RequestError as exc:
                 if attempt == self._max_retries:
-                    raise NetworkError(
-                        f"Network error calling {self._profile.url}: {exc}"
-                    ) from exc
+                    raise NetworkError(f"Network error calling {self._profile.url}: {exc}") from exc
                 self._sleep(self._delay(attempt))
                 continue
 

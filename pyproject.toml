@@ -38,6 +38,9 @@ dependencies = [
     "tomli-w>=1.0",
     "PyYAML>=6.0",
     "orjson>=3.10",
+    # Required by the vendored generated client in src/dd_cli/_client/.
+    "attrs>=23.2",
+    "python-dateutil>=2.9",
 ]
 
 [project.optional-dependencies]

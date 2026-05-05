@@ -123,9 +123,7 @@ def test_configure_collects_extra_headers(runner: CliRunner, config_path: Path) 
     assert data["profiles"]["default"]["extra_headers"] == {"X-WAF": "secret-value"}
 
 
-def test_configure_without_url_in_no_input_fails(
-    runner: CliRunner, config_path: Path
-) -> None:
+def test_configure_without_url_in_no_input_fails(runner: CliRunner, config_path: Path) -> None:
     result = runner.invoke(
         app,
         ["configure", "--no-input", "--api-key", "k"],

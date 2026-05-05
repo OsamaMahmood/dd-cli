@@ -53,9 +53,7 @@ def test_ping_fails_when_profile_incomplete(runner: CliRunner) -> None:
     assert result.exception is not None
 
 
-def test_ping_fails_with_auth_error_on_401(
-    runner: CliRunner, httpx_mock: HTTPXMock
-) -> None:
+def test_ping_fails_with_auth_error_on_401(runner: CliRunner, httpx_mock: HTTPXMock) -> None:
     _seed_profile(runner)
     httpx_mock.add_response(
         url="https://dd.example/api/v2/user_profile/",
@@ -88,9 +86,7 @@ def test_ping_uses_legacy_dd_env_vars(
     assert body["user"] == "legacy-user"
 
 
-def test_ping_handles_alternate_username_shape(
-    runner: CliRunner, httpx_mock: HTTPXMock
-) -> None:
+def test_ping_handles_alternate_username_shape(runner: CliRunner, httpx_mock: HTTPXMock) -> None:
     _seed_profile(runner)
     # Some DD versions return a flat shape
     httpx_mock.add_response(

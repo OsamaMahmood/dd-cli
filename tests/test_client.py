@@ -42,9 +42,7 @@ def test_whoami_returns_parsed_body(client: DefectDojoClient, httpx_mock: HTTPXM
     assert body == {"user": {"id": 1, "username": "tester"}}
 
 
-def test_whoami_sends_token_auth_header(
-    client: DefectDojoClient, httpx_mock: HTTPXMock
-) -> None:
+def test_whoami_sends_token_auth_header(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/user_profile/",
         json={"user": {"id": 1}},
@@ -55,9 +53,7 @@ def test_whoami_sends_token_auth_header(
     assert request.headers["Authorization"] == "Token the-token"
 
 
-def test_extra_headers_are_attached(
-    profile: Profile, httpx_mock: HTTPXMock
-) -> None:
+def test_extra_headers_are_attached(profile: Profile, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/user_profile/",
         json={},
@@ -92,9 +88,7 @@ def test_404_maps_to_not_found(client: DefectDojoClient, httpx_mock: HTTPXMock) 
         client.whoami()
 
 
-def test_400_includes_detail_in_message(
-    client: DefectDojoClient, httpx_mock: HTTPXMock
-) -> None:
+def test_400_includes_detail_in_message(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/user_profile/",
         status_code=400,
@@ -159,9 +153,7 @@ def test_returns_last_response_after_max_retries(
         client.whoami()
 
 
-def test_400_is_not_retried(
-    profile: Profile, httpx_mock: HTTPXMock, no_sleep: list[float]
-) -> None:
+def test_400_is_not_retried(profile: Profile, httpx_mock: HTTPXMock, no_sleep: list[float]) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/user_profile/",
         status_code=400,
@@ -199,9 +191,7 @@ def test_timeout_after_retries(
 # ---------------------------- pagination ---------------------------------- #
 
 
-def test_paginate_walks_next_links(
-    client: DefectDojoClient, httpx_mock: HTTPXMock
-) -> None:
+def test_paginate_walks_next_links(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/products/",
         json={
@@ -223,9 +213,7 @@ def test_paginate_walks_next_links(
     assert [it["id"] for it in items] == [1, 2, 3]
 
 
-def test_paginate_with_filters(
-    client: DefectDojoClient, httpx_mock: HTTPXMock
-) -> None:
+def test_paginate_with_filters(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/findings/?severity=High",
         json={"next": None, "results": [{"id": 1, "severity": "High"}]},
@@ -234,9 +222,7 @@ def test_paginate_with_filters(
     assert items == [{"id": 1, "severity": "High"}]
 
 
-def test_paginate_empty_results(
-    client: DefectDojoClient, httpx_mock: HTTPXMock
-) -> None:
+def test_paginate_empty_results(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         url="https://dd.example/api/v2/products/",
         json={"next": None, "results": []},

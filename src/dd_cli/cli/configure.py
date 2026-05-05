@@ -31,9 +31,7 @@ def configure(
     ] = None,
     api_key: Annotated[
         str | None,
-        typer.Option(
-            "--api-key", help="API token (skips the prompt).", show_default=False
-        ),
+        typer.Option("--api-key", help="API token (skips the prompt).", show_default=False),
     ] = None,
     no_input: Annotated[
         bool,
@@ -75,9 +73,7 @@ def configure(
     )
 
     extra_headers = dict(existing.extra_headers)
-    if not no_input and typer.confirm(
-        "Add extra HTTP headers (e.g. for WAF auth)?", default=False
-    ):
+    if not no_input and typer.confirm("Add extra HTTP headers (e.g. for WAF auth)?", default=False):
         while True:
             header_name = typer.prompt(
                 "Header name (empty to finish)", default="", show_default=False
@@ -120,6 +116,4 @@ def _prompt_secret(prompt: str, *, existing_present: bool, no_input: bool) -> st
     if no_input:
         return ""
     suffix = " (press Enter to keep existing)" if existing_present else ""
-    return str(
-        typer.prompt(f"{prompt}{suffix}", default="", hide_input=True, show_default=False)
-    )
+    return str(typer.prompt(f"{prompt}{suffix}", default="", hide_input=True, show_default=False))
