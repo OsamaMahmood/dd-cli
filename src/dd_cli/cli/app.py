@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 
 from dd_cli.cli.config_cmd import config_app
+from dd_cli.cli.configure import configure
 from dd_cli.errors import DDCliError
 from dd_cli.output import OutputFormat
 from dd_cli.version import __version__
@@ -25,6 +26,7 @@ app = typer.Typer(
 )
 
 app.add_typer(config_app)
+app.command("configure", help="Interactively create or update a profile.")(configure)
 
 
 def _version_callback(value: bool) -> None:
