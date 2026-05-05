@@ -1,21 +1,19 @@
+"""Top-level Typer app and `dd` entry point."""
+
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import Annotated
 
 import typer
 from rich.console import Console
 
+from dd_cli.cli.config_cmd import config_app
+from dd_cli.errors import DDCliError
+from dd_cli.output import OutputFormat
 from dd_cli.version import __version__
 
 console = Console()
 err_console = Console(stderr=True)
-
-
-class OutputFormat(StrEnum):
-    table = "table"
-    json = "json"
-    yaml = "yaml"
 
 
 app = typer.Typer(
@@ -26,6 +24,8 @@ app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 
+app.add_typer(config_app)
+
 
 def _version_callback(value: bool) -> None:
     if value:
@@ -34,7 +34,7 @@ def _version_callback(value: bool) -> None:
 
 
 @app.callback()
-def main(
+def main_callback(
     ctx: typer.Context,
     version: Annotated[
         bool,
@@ -52,7 +52,7 @@ def main(
             "--profile",
             "-p",
             help="Configuration profile to use.",
-            envvar="DD_PROFILE",
+            envvar=["DD_CLI_PROFILE", "DD_PROFILE"],
         ),
     ] = None,
     output: Annotated[
@@ -61,7 +61,7 @@ def main(
             "--output",
             "-o",
             help="Output format.",
-            envvar="DD_OUTPUT",
+            envvar=["DD_CLI_OUTPUT", "DD_OUTPUT"],
         ),
     ] = OutputFormat.table,
     verbose: Annotated[
@@ -81,5 +81,20 @@ def main(
     }
 
 
+def main() -> None:
+    """Entry point for the `dd` console script.
+
+    Wraps `app()` so that typed `DDCliError` exceptions are mapped to
+    stable exit codes per `PLAN.md` §5 instead of dumping a traceback.
+    """
+    try:
+        app()
+    except DDCliError as exc:
+        err_console.print(f"[red bold]Error:[/red bold] {exc.message}")
+        if exc.hint:
+            err_console.print(f"[yellow]Hint:[/yellow] {exc.hint}")
+        raise SystemExit(exc.exit_code) from None
+
+
 if __name__ == "__main__":
-    app()
+    main()
