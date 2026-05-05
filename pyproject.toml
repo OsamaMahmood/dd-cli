@@ -121,6 +121,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+# `tests_cmd.py` triggers ruff's pytest-style rules because the file name
+# matches `tests_*.py`. This is CLI code for `dd tests`, not a test module.
+# Using `**/tests_cmd.py` so the pattern matches regardless of the working
+# directory ruff is invoked from.
+"**/tests_cmd.py" = ["PT"]
 
 [tool.ruff.format]
 quote-style = "double"
