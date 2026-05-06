@@ -1,6 +1,6 @@
 [project]
 name = "defectdojo-cli"
-version = "0.0.1"
+dynamic = ["version"]
 description = "Production-grade CLI for managing DefectDojo"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -79,8 +79,21 @@ dd = "dd_cli.cli.app:main"
 # dd-import-languages  = "dd_cli.cli.legacy:dd_import_languages_main"
 
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.24", "hatch-vcs>=0.4"]
 build-backend = "hatchling.build"
+
+# Derive the package version from the latest git tag (`v0.3.0` → `0.3.0`).
+# Untagged commits between tags get a dev version (`0.3.1.dev3+gabc1234`).
+# Single source of truth (git), no pyproject.toml field to forget to bump.
+# setuptools_scm (used by hatch-vcs) strips the `v` prefix automatically.
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+# Bake the resolved version into the installed package as `_version.py`,
+# so `python -c "import dd_cli; print(dd_cli.__version__)"` works on a
+# wheel install where the .git directory is absent.
+version-file = "src/dd_cli/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dd_cli"]
@@ -93,12 +106,15 @@ include = [
     "CHANGELOG.md",
     "PLAN.md",
 ]
+exclude = [
+    "src/dd_cli/_version.py",
+]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
 src = ["src", "tests"]
-extend-exclude = ["src/dd_cli/_client", "dd_import"]
+extend-exclude = ["src/dd_cli/_client", "src/dd_cli/_version.py", "dd_import"]
 
 [tool.ruff.lint]
 select = [
