@@ -152,10 +152,14 @@ ignore_errors = true
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+# Integration tests need a live DefectDojo and are excluded from the default
+# `pytest` run. Use `make smoke` (or `pytest -m integration`) to run them.
 addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
+    "-m",
+    "not integration",
     "--cov=dd_cli",
     "--cov-report=term-missing",
     "--cov-report=xml",

@@ -99,6 +99,91 @@ def test_400_includes_detail_in_message(client: DefectDojoClient, httpx_mock: HT
     assert "Bad request" in str(excinfo.value)
 
 
+def test_400_field_level_errors_rendered_readably(
+    client: DefectDojoClient, httpx_mock: HTTPXMock
+) -> None:
+    """DRF's `{field: [errors...]}` shape — what DD returns on findings create."""
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/user_profile/",
+        status_code=400,
+        json={
+            "found_by": ["This field is required."],
+            "title": ["May not be blank."],
+        },
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        client.whoami()
+    msg = str(excinfo.value)
+    assert "found_by=This field is required." in msg
+    assert "title=May not be blank." in msg
+    # No Python-repr garbage:
+    assert "['" not in msg
+    assert "ErrorDetail(" not in msg
+
+
+def test_400_filters_defectdojo_pro_upsell(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
+    """DD inserts a `pro` key with marketing copy in some error responses."""
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/user_profile/",
+        status_code=400,
+        json={
+            "found_by": ["This field is required."],
+            "message": "{'found_by': [ErrorDetail(string='This field is required.', code='required')]}",
+            "pro": [
+                "Pro comes with support. Try today for free or email us at hello@defectdojo.com"
+            ],
+        },
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        client.whoami()
+    msg = str(excinfo.value)
+    assert "found_by=This field is required." in msg
+    assert "Pro comes with support" not in msg
+    assert "ErrorDetail" not in msg
+
+
+def test_400_multiple_errors_per_field_joined(
+    client: DefectDojoClient, httpx_mock: HTTPXMock
+) -> None:
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/user_profile/",
+        status_code=400,
+        json={"name": ["May not be blank.", "Already exists."]},
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        client.whoami()
+    msg = str(excinfo.value)
+    assert "name=May not be blank.; Already exists." in msg
+
+
+def test_400_unknown_shape_falls_back_to_json(
+    client: DefectDojoClient, httpx_mock: HTTPXMock
+) -> None:
+    """Last-resort path: response is a JSON list/scalar — render via json.dumps, not str()."""
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/user_profile/",
+        status_code=400,
+        json=["something went wrong"],
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        client.whoami()
+    msg = str(excinfo.value)
+    # JSON encoding uses double quotes, Python repr uses single quotes
+    assert '"something went wrong"' in msg
+    assert "'something went wrong'" not in msg
+
+
+def test_400_non_json_body_truncated(client: DefectDojoClient, httpx_mock: HTTPXMock) -> None:
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/user_profile/",
+        status_code=400,
+        text="<html>bad gateway</html>",
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        client.whoami()
+    assert "<html>bad gateway</html>" in str(excinfo.value)
+
+
 # ---------------------------- retry behaviour ----------------------------- #
 
 
