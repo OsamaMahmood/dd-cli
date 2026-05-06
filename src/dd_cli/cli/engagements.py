@@ -1,4 +1,4 @@
-"""`dd engagements` — list and get DefectDojo engagements."""
+"""`dd engagements` — list, get, CRUD, plus close / reopen verbs."""
 
 from __future__ import annotations
 
@@ -9,10 +9,15 @@ import typer
 from dd_cli.cli._resource import (
     DEFAULT_LIMIT,
     ResourceSpec,
+    confirm_or_abort,
+    get_active_profile,
     get_dispatch,
     list_resource,
+    print_dry_run,
     register_crud,
+    render_response,
 )
+from dd_cli.client import DefectDojoClient
 from dd_cli.output import OutputFormat
 
 ENGAGEMENTS_SPEC = ResourceSpec(
@@ -101,3 +106,52 @@ def engagements_get(
 
 
 register_crud(engagements_app, ENGAGEMENTS_SPEC)
+
+
+# ---------------------------- action verbs ------------------------------ #
+
+
+@engagements_app.command("close")
+def engagements_close(
+    ctx: typer.Context,
+    engagement_id: Annotated[int, typer.Argument(help="Engagement ID.")],
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation.")] = False,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Print intent only.")] = False,
+    output: Annotated[
+        OutputFormat | None, typer.Option("--output", "-o", help="Output format.")
+    ] = None,
+) -> None:
+    """Close an engagement via DefectDojo's dedicated /close/ endpoint."""
+    target = f"/api/v2/engagements/{engagement_id}/close/"
+    if dry_run:
+        print_dry_run("POST", target, {}, ctx, output)
+        return
+    confirm_or_abort(f"Close engagement {engagement_id}?", yes=yes)
+    profile = get_active_profile(ctx)
+    with DefectDojoClient(profile) as client:
+        body = client.post(target, json={})
+    typer.echo(f"Closed engagement {engagement_id}.")
+    render_response(body, ctx, output)
+
+
+@engagements_app.command("reopen")
+def engagements_reopen(
+    ctx: typer.Context,
+    engagement_id: Annotated[int, typer.Argument(help="Engagement ID.")],
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation.")] = False,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Print intent only.")] = False,
+    output: Annotated[
+        OutputFormat | None, typer.Option("--output", "-o", help="Output format.")
+    ] = None,
+) -> None:
+    """Reopen a closed engagement via DefectDojo's dedicated /reopen/ endpoint."""
+    target = f"/api/v2/engagements/{engagement_id}/reopen/"
+    if dry_run:
+        print_dry_run("POST", target, {}, ctx, output)
+        return
+    confirm_or_abort(f"Reopen engagement {engagement_id}?", yes=yes)
+    profile = get_active_profile(ctx)
+    with DefectDojoClient(profile) as client:
+        body = client.post(target, json={})
+    typer.echo(f"Reopened engagement {engagement_id}.")
+    render_response(body, ctx, output)

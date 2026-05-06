@@ -263,6 +263,67 @@ def delete_resource(
     typer.echo(f"Deleted {spec.name} {resource_id}.")
 
 
+def edit_resource(
+    ctx: typer.Context,
+    spec: ResourceSpec,
+    resource_id: int,
+    *,
+    dry_run: bool,
+    output: OutputFormat | None,
+) -> None:
+    """Fetch resource, open as YAML in $EDITOR, PATCH the diff on save.
+
+    Sends only fields the user actually changed; aborts cleanly if no
+    edits were made or the user saved an empty file.
+    """
+    profile_name = _resolved_profile_name(ctx, None)
+    fmt = _output_format(ctx, output)
+    profile = load_profile(name=profile_name)
+    _require_complete(profile_name or profile.name, profile)
+
+    target = f"{spec.path}{resource_id}/"
+
+    with DefectDojoClient(profile) as client:
+        current = client.get(target)
+
+        original_yaml = yaml.safe_dump(current, sort_keys=False, default_flow_style=False)
+        edited_text = typer.edit(
+            text=original_yaml,
+            extension=".yaml",
+            require_save=True,
+        )
+        if edited_text is None:
+            typer.echo("No changes (file not saved).")
+            return
+
+        try:
+            edited = yaml.safe_load(edited_text)
+        except yaml.YAMLError as exc:
+            raise ValidationError(f"Edited file is not valid YAML: {exc}") from exc
+        if not isinstance(edited, dict):
+            raise ValidationError(
+                f"Edited file must be a YAML mapping, got {type(edited).__name__}",
+            )
+
+        patch = _diff_payload(current, edited)
+        if not patch:
+            typer.echo("No changes.")
+            return
+
+        if dry_run:
+            _print_dry_run("PATCH", target, patch, ctx, output)
+            return
+
+        body = client.patch(target, json=patch)
+
+    typer.echo(render(body, fmt), nl=False)
+
+
+def _diff_payload(current: Mapping[str, Any], edited: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the subset of `edited` that differs from `current` (added or changed)."""
+    return {key: value for key, value in edited.items() if current.get(key) != value}
+
+
 # ----------------------------------------------------------------------- #
 #  Payload construction                                                   #
 # ----------------------------------------------------------------------- #
@@ -335,6 +396,60 @@ def _print_dry_run(
     rendered = render(dict(payload), fmt)
     typer.echo(f"DRY RUN: would {method} {path} with payload:")
     typer.echo(rendered, nl=False)
+
+
+# ----------------------------------------------------------------------- #
+#  Public helpers reused by action-verb commands                          #
+# ----------------------------------------------------------------------- #
+
+
+def get_active_profile(ctx: typer.Context) -> Any:
+    """Resolve the active profile from CLI context + config + env."""
+    profile_name = _resolved_profile_name(ctx, None)
+    profile = load_profile(name=profile_name)
+    _require_complete(profile_name or profile.name, profile)
+    return profile
+
+
+def get_output_format(
+    ctx: typer.Context,
+    override: OutputFormat | None = None,
+) -> OutputFormat:
+    """Resolve the output format from CLI context + override."""
+    return _output_format(ctx, override)
+
+
+def confirm_or_abort(message: str, *, yes: bool) -> None:
+    """Prompt for confirmation; exit cleanly with code 0 if user declines.
+
+    No-op when `yes=True` (the standard `--yes`/`-y` skip).
+    """
+    if not yes and not typer.confirm(message):
+        typer.echo("Aborted.")
+        raise typer.Exit(code=0)
+
+
+def print_dry_run(
+    method: str,
+    path: str,
+    payload: Mapping[str, Any],
+    ctx: typer.Context,
+    output: OutputFormat | None = None,
+) -> None:
+    """Public alias of `_print_dry_run` for action-verb commands."""
+    _print_dry_run(method, path, payload, ctx, output)
+
+
+def render_response(
+    body: Any,
+    ctx: typer.Context,
+    output: OutputFormat | None = None,
+) -> None:
+    """Echo `body` rendered in the active output format. Skips empty bodies."""
+    if body is None or body == {}:
+        return
+    fmt = _output_format(ctx, output)
+    typer.echo(render(body, fmt), nl=False)
 
 
 # ----------------------------------------------------------------------- #
@@ -450,6 +565,21 @@ def register_crud(sub_app: typer.Typer, spec: ResourceSpec) -> None:
         ] = False,
     ) -> None:
         delete_resource(ctx, spec, resource_id, yes=yes, dry_run=dry_run)
+
+    @sub_app.command("edit", help=f"Open a {spec.name} as YAML in $EDITOR; PATCH the diff.")
+    def _edit(
+        ctx: typer.Context,
+        resource_id: Annotated[int, typer.Argument(help="Resource ID.")],
+        dry_run: Annotated[
+            bool,
+            typer.Option("--dry-run", help="Print the patch that would be sent."),
+        ] = False,
+        output: Annotated[
+            OutputFormat | None,
+            typer.Option("--output", "-o", help="Output format."),
+        ] = None,
+    ) -> None:
+        edit_resource(ctx, spec, resource_id, dry_run=dry_run, output=output)
 
 
 # ----------------------------------------------------------------------- #
