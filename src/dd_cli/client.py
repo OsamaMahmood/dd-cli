@@ -11,6 +11,7 @@ that need to call generated endpoints directly.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable, Iterator, Mapping
 from typing import Any, TypeVar
@@ -242,13 +243,39 @@ class DefectDojoClient:
 
     @staticmethod
     def _extract_error_message(response: httpx.Response) -> str:
+        """Render a useful one-line summary of an error response.
+
+        Handles three shapes DefectDojo actually returns:
+        - `{"detail": "..."}` → "HTTP <code>: <detail>"
+        - `{"<field>": ["error", ...], ...}` (DRF field-level validation
+          errors) → "HTTP <code>: field=error1; field2=error2"
+        - anything else → JSON-formatted body (not Python repr)
+
+        Filters out DefectDojo Pro upsell keys (`pro`, `message`) so they
+        don't drown out the actual problem.
+        """
         try:
             body = response.json()
         except ValueError:
             return f"HTTP {response.status_code}: {response.text[:200]}"
-        if isinstance(body, dict) and "detail" in body:
-            return f"HTTP {response.status_code}: {body['detail']}"
-        return f"HTTP {response.status_code}: {body}"
+
+        if isinstance(body, dict):
+            if "detail" in body:
+                return f"HTTP {response.status_code}: {body['detail']}"
+
+            # DefectDojo's field-level validation errors: {"field": ["msg", ...]}.
+            # Strip the upsell noise (`pro`) and the redundant `message` key
+            # which just repeats a Python repr of the error dict.
+            cleaned = {k: v for k, v in body.items() if k not in {"pro", "message"}}
+            field_errors = [
+                f"{field}={'; '.join(str(m) for m in msgs) if isinstance(msgs, list) else msgs}"
+                for field, msgs in cleaned.items()
+            ]
+            if field_errors:
+                return f"HTTP {response.status_code}: {'; '.join(field_errors)}"
+
+        # Fallback: JSON-format whatever we got (no Python-repr garbage).
+        return f"HTTP {response.status_code}: {json.dumps(body, sort_keys=True)}"
 
 
 def _ensure_unexpected_status_imported() -> type[UnexpectedStatus]:

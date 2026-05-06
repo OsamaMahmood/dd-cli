@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install install-dev install-all generate-client lint format typecheck test test-cov coverage docs docs-serve build clean
+.PHONY: help install install-dev install-all generate-client lint format typecheck test test-cov coverage smoke docs docs-serve build clean
 
 # Use uv if available (faster), otherwise fall back to pip.
 PIP := $(shell command -v uv >/dev/null 2>&1 && echo "uv pip" || echo "pip")
@@ -49,6 +49,14 @@ test-cov:  ## Run pytest with coverage report
 	pytest --cov-report=term-missing --cov-report=html
 
 coverage: test-cov  ## Alias for test-cov
+
+smoke:  ## Run integration tests against a live DefectDojo (requires DD_URL + DD_API_KEY)
+	@if [ -z "$$DD_URL" ] || [ -z "$$DD_API_KEY" ]; then \
+		echo "DD_URL and DD_API_KEY must be set in the environment."; \
+		echo "Example:  DD_URL=http://localhost:8080 DD_API_KEY=… make smoke"; \
+		exit 1; \
+	fi
+	pytest -m integration --no-cov -v
 
 docs:  ## Build docs
 	mkdocs build --strict
