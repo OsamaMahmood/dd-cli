@@ -15,6 +15,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -95,3 +96,6 @@ def tests_get(
 ) -> None:
     """Get a single test by ID or title."""
     get_dispatch(ctx, TESTS_SPEC, resource_id=test_id, name=name, output=output)
+
+
+register_crud(tests_app, TESTS_SPEC)

@@ -17,6 +17,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -98,3 +99,6 @@ def endpoints_get(
 ) -> None:
     """Get a single endpoint by ID or host."""
     get_dispatch(ctx, ENDPOINTS_SPEC, resource_id=endpoint_id, name=name, output=output)
+
+
+register_crud(endpoints_app, ENDPOINTS_SPEC)

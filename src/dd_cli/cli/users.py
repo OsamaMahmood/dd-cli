@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -95,3 +96,6 @@ def users_get(
 ) -> None:
     """Get a single user by ID or username."""
     get_dispatch(ctx, USERS_SPEC, resource_id=user_id, name=name, output=output)
+
+
+register_crud(users_app, USERS_SPEC)

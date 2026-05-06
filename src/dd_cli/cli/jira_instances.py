@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -83,3 +84,6 @@ def jira_instances_get(
         name=name,
         output=output,
     )
+
+
+register_crud(jira_instances_app, JIRA_INSTANCES_SPEC)

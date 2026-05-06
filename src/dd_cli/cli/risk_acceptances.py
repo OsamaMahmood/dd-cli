@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -105,3 +106,6 @@ def risk_acceptances_get(
         name=name,
         output=output,
     )
+
+
+register_crud(risk_acceptances_app, RISK_ACCEPTANCES_SPEC)

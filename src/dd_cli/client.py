@@ -106,6 +106,42 @@ class DefectDojoClient:
             raise APIError(f"Unexpected response shape from {path}")
         return dict(body)
 
+    def post(self, path: str, *, json: Mapping[str, Any]) -> dict[str, Any]:
+        """POST `json` to `path`. Returns the parsed response body (the created resource)."""
+
+        def _call() -> httpx.Response:
+            return self._raw.get_httpx_client().post(path, json=dict(json))
+
+        response = self._with_retry(_call)
+        body = self._parse_response(response)
+        if not isinstance(body, Mapping):
+            raise APIError(f"Unexpected response shape from POST {path}")
+        return dict(body)
+
+    def patch(self, path: str, *, json: Mapping[str, Any]) -> dict[str, Any]:
+        """PATCH `json` to `path`. Returns the parsed response body (the updated resource)."""
+
+        def _call() -> httpx.Response:
+            return self._raw.get_httpx_client().patch(path, json=dict(json))
+
+        response = self._with_retry(_call)
+        body = self._parse_response(response)
+        if not isinstance(body, Mapping):
+            raise APIError(f"Unexpected response shape from PATCH {path}")
+        return dict(body)
+
+    def delete(self, path: str) -> None:
+        """DELETE `path`. Returns nothing on success; raises typed errors on failure."""
+
+        def _call() -> httpx.Response:
+            return self._raw.get_httpx_client().delete(path)
+
+        response = self._with_retry(_call)
+        if response.status_code == 204 or 200 <= response.status_code < 300:
+            return
+        # Reuse the JSON-error-extraction path:
+        self._parse_response(response)
+
     def paginate(
         self,
         path: str,

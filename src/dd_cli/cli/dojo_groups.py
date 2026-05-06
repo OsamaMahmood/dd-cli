@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -80,3 +81,6 @@ def dojo_groups_get(
 ) -> None:
     """Get a single dojo group by ID or name."""
     get_dispatch(ctx, DOJO_GROUPS_SPEC, resource_id=group_id, name=name, output=output)
+
+
+register_crud(dojo_groups_app, DOJO_GROUPS_SPEC)

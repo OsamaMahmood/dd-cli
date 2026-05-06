@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -97,3 +98,6 @@ def engagements_get(
 ) -> None:
     """Get a single engagement by ID or name."""
     get_dispatch(ctx, ENGAGEMENTS_SPEC, resource_id=engagement_id, name=name, output=output)
+
+
+register_crud(engagements_app, ENGAGEMENTS_SPEC)
