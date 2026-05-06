@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -89,3 +90,6 @@ def products_get(
 ) -> None:
     """Get a single product by ID or name."""
     get_dispatch(ctx, PRODUCTS_SPEC, resource_id=product_id, name=name, output=output)
+
+
+register_crud(products_app, PRODUCTS_SPEC)

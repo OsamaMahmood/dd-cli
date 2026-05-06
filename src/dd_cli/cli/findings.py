@@ -11,6 +11,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.errors import ValidationError
 from dd_cli.output import OutputFormat
@@ -148,3 +149,6 @@ def _canonicalise_severity(value: str | None) -> str | None:
             f"Unknown severity {value!r}. Expected one of {sorted(VALID_SEVERITIES)}.",
         )
     return canonical
+
+
+register_crud(findings_app, FINDINGS_SPEC)

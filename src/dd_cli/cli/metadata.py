@@ -17,6 +17,7 @@ from dd_cli.cli._resource import (
     ResourceSpec,
     get_dispatch,
     list_resource,
+    register_crud,
 )
 from dd_cli.output import OutputFormat
 
@@ -98,3 +99,6 @@ def metadata_get(
 ) -> None:
     """Get a single metadata entry by ID or name."""
     get_dispatch(ctx, METADATA_SPEC, resource_id=entry_id, name=name, output=output)
+
+
+register_crud(metadata_app, METADATA_SPEC)
