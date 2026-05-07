@@ -54,16 +54,22 @@ jobs:
         run: python -m build --outdir dist/
 
       - name: Verify wheel installs and `dd --version` matches the tag
+        # Compare PEP 440-normalized forms — hatch-vcs canonicalises `v2.0.0-rc.1`
+        # to `2.0.0rc1` per PEP 440, so a literal string compare against the
+        # tag fails on prereleases. `packaging.version.Version()` returns the
+        # canonical form, which is what's baked into the wheel metadata.
         run: |
           python -m venv /tmp/verify
-          /tmp/verify/bin/pip install --upgrade pip
+          /tmp/verify/bin/pip install --upgrade pip packaging
           /tmp/verify/bin/pip install dist/*.whl
           BUILT_VERSION=$(/tmp/verify/bin/dd --version | awk '{print $2}')
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          echo "tag-derived version: $TAG_VERSION"
+          NORMALIZED_TAG=$(/tmp/verify/bin/python -c "from packaging.version import Version; print(Version('$TAG_VERSION'))")
+          echo "raw tag version:     $TAG_VERSION"
+          echo "PEP 440 normalized:  $NORMALIZED_TAG"
           echo "wheel version:       $BUILT_VERSION"
-          if [ "$BUILT_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::Version mismatch — built wheel reports $BUILT_VERSION but tag is v$TAG_VERSION"
+          if [ "$BUILT_VERSION" != "$NORMALIZED_TAG" ]; then
+            echo "::error::Version mismatch — built wheel reports $BUILT_VERSION but tag normalizes to $NORMALIZED_TAG"
             exit 1
           fi
 
