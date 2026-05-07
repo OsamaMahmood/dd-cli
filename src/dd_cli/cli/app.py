@@ -56,6 +56,8 @@ app.add_typer(import_app)
 app.command("configure", help="Interactively create or update a profile.")(configure)
 app.command("ping", help="Verify connectivity and authentication against DefectDojo.")(ping)
 
+click_app = typer.main.get_command(app)
+
 
 def _version_callback(value: bool) -> None:
     if value:
