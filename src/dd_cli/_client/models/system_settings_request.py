@@ -106,7 +106,6 @@ class SystemSettingsRequest:
         enable_notify_sla_exponential_backoff (bool | Unset): Enable an exponential backoff strategy for SLA breach
             notifications, e.g. 1, 2, 4, 8, etc. Otherwise it alerts every day
         allow_anonymous_survey_repsonse (bool | Unset): Enable anyone with a link to the survey to answer a survey
-        credentials (str | Unset):
         disclaimer_notifications (str | Unset): Include this custom disclaimer on all notifications
         disclaimer_reports (str | Unset): Include this custom disclaimer on generated reports
         disclaimer_reports_forced (bool | Unset): Disclaimer will be added to all reports even if user didn't selected
@@ -207,7 +206,6 @@ class SystemSettingsRequest:
     enable_notify_sla_jira_only: bool | Unset = UNSET
     enable_notify_sla_exponential_backoff: bool | Unset = UNSET
     allow_anonymous_survey_repsonse: bool | Unset = UNSET
-    credentials: str | Unset = UNSET
     disclaimer_notifications: str | Unset = UNSET
     disclaimer_reports: str | Unset = UNSET
     disclaimer_reports_forced: bool | Unset = UNSET
@@ -359,8 +357,6 @@ class SystemSettingsRequest:
         enable_notify_sla_exponential_backoff = self.enable_notify_sla_exponential_backoff
 
         allow_anonymous_survey_repsonse = self.allow_anonymous_survey_repsonse
-
-        credentials = self.credentials
 
         disclaimer_notifications = self.disclaimer_notifications
 
@@ -537,8 +533,6 @@ class SystemSettingsRequest:
             )
         if allow_anonymous_survey_repsonse is not UNSET:
             field_dict["allow_anonymous_survey_repsonse"] = allow_anonymous_survey_repsonse
-        if credentials is not UNSET:
-            field_dict["credentials"] = credentials
         if disclaimer_notifications is not UNSET:
             field_dict["disclaimer_notifications"] = disclaimer_notifications
         if disclaimer_reports is not UNSET:
@@ -940,9 +934,6 @@ class SystemSettingsRequest:
                     (None, str(self.allow_anonymous_survey_repsonse).encode(), "text/plain"),
                 )
             )
-
-        if not isinstance(self.credentials, Unset):
-            files.append(("credentials", (None, str(self.credentials).encode(), "text/plain")))
 
         if not isinstance(self.disclaimer_notifications, Unset):
             files.append(
@@ -1372,8 +1363,6 @@ class SystemSettingsRequest:
 
         allow_anonymous_survey_repsonse = d.pop("allow_anonymous_survey_repsonse", UNSET)
 
-        credentials = d.pop("credentials", UNSET)
-
         disclaimer_notifications = d.pop("disclaimer_notifications", UNSET)
 
         disclaimer_reports = d.pop("disclaimer_reports", UNSET)
@@ -1512,7 +1501,6 @@ class SystemSettingsRequest:
             enable_notify_sla_jira_only=enable_notify_sla_jira_only,
             enable_notify_sla_exponential_backoff=enable_notify_sla_exponential_backoff,
             allow_anonymous_survey_repsonse=allow_anonymous_survey_repsonse,
-            credentials=credentials,
             disclaimer_notifications=disclaimer_notifications,
             disclaimer_reports=disclaimer_reports,
             disclaimer_reports_forced=disclaimer_reports_forced,

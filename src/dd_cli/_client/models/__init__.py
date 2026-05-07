@@ -104,6 +104,11 @@ from .burp_raw_request_response_request import BurpRawRequestResponseRequest
 from .burp_raw_request_response_request_req_resp_item import (
     BurpRawRequestResponseRequestReqRespItem,
 )
+from .celery_queue_purge_create_response_200 import CeleryQueuePurgeCreateResponse200
+from .celery_queue_task_detail import CeleryQueueTaskDetail
+from .celery_queue_task_purge_create_body import CeleryQueueTaskPurgeCreateBody
+from .celery_queue_task_purge_create_response_200 import CeleryQueueTaskPurgeCreateResponse200
+from .celery_status import CeleryStatus
 from .configuration_permission import ConfigurationPermission
 from .credential import Credential
 from .credential_authentication import CredentialAuthentication
@@ -253,6 +258,7 @@ from .finding_test import FindingTest
 from .finding_test_type import FindingTestType
 from .finding_to_files import FindingToFiles
 from .finding_to_notes import FindingToNotes
+from .finding_verify_request import FindingVerifyRequest
 from .findings_accept_risks_create_created_type_1 import FindingsAcceptRisksCreateCreatedType1
 from .findings_accept_risks_create_created_type_2_type_1 import (
     FindingsAcceptRisksCreateCreatedType2Type1,
@@ -1102,9 +1108,11 @@ from .report_generate import ReportGenerate
 from .report_generate_option_request import ReportGenerateOptionRequest
 from .risk_acceptance import RiskAcceptance
 from .risk_acceptance_decision import RiskAcceptanceDecision
+from .risk_acceptance_list_created_type_1 import RiskAcceptanceListCreatedType1
 from .risk_acceptance_list_decision import RiskAcceptanceListDecision
 from .risk_acceptance_list_o_item import RiskAcceptanceListOItem
 from .risk_acceptance_list_security_recommendation import RiskAcceptanceListSecurityRecommendation
+from .risk_acceptance_list_updated_type_1 import RiskAcceptanceListUpdatedType1
 from .risk_acceptance_proof import RiskAcceptanceProof
 from .risk_acceptance_request import RiskAcceptanceRequest
 from .risk_acceptance_request_decision import RiskAcceptanceRequestDecision
@@ -1112,6 +1120,7 @@ from .risk_acceptance_request_security_recommendation import (
     RiskAcceptanceRequestSecurityRecommendation,
 )
 from .risk_acceptance_security_recommendation import RiskAcceptanceSecurityRecommendation
+from .risk_acceptance_to_notes import RiskAcceptanceToNotes
 from .role import Role
 from .severity_status_statistics import SeverityStatusStatistics
 from .severity_status_statistics_request import SeverityStatusStatisticsRequest
@@ -1323,6 +1332,11 @@ __all__ = (
     "BurpRawRequestResponseReqRespItem",
     "BurpRawRequestResponseRequest",
     "BurpRawRequestResponseRequestReqRespItem",
+    "CeleryQueuePurgeCreateResponse200",
+    "CeleryQueueTaskDetail",
+    "CeleryQueueTaskPurgeCreateBody",
+    "CeleryQueueTaskPurgeCreateResponse200",
+    "CeleryStatus",
     "ConfigurationPermission",
     "Credential",
     "CredentialAuthentication",
@@ -1456,6 +1470,7 @@ __all__ = (
     "FindingTestType",
     "FindingToFiles",
     "FindingToNotes",
+    "FindingVerifyRequest",
     "FindingsAcceptRisksCreateCreatedType1",
     "FindingsAcceptRisksCreateCreatedType2Type1",
     "FindingsAcceptRisksCreateCreatedType3Type1",
@@ -2055,14 +2070,17 @@ __all__ = (
     "ReportGenerateOptionRequest",
     "RiskAcceptance",
     "RiskAcceptanceDecision",
+    "RiskAcceptanceListCreatedType1",
     "RiskAcceptanceListDecision",
     "RiskAcceptanceListOItem",
     "RiskAcceptanceListSecurityRecommendation",
+    "RiskAcceptanceListUpdatedType1",
     "RiskAcceptanceProof",
     "RiskAcceptanceRequest",
     "RiskAcceptanceRequestDecision",
     "RiskAcceptanceRequestSecurityRecommendation",
     "RiskAcceptanceSecurityRecommendation",
+    "RiskAcceptanceToNotes",
     "Role",
     "SLAConfiguration",
     "SLAConfigurationRequest",

@@ -34,6 +34,7 @@ class ImportScan:
             * `Anchore Engine Scan` - Anchore Engine Scan
             * `Anchore Enterprise Policy Check` - Anchore Enterprise Policy Check
             * `Anchore Grype` - Anchore Grype
+            * `Anchore Grype detailed` - Anchore Grype detailed
             * `AnchoreCTL Policies Report` - AnchoreCTL Policies Report
             * `AnchoreCTL Vuln Report` - AnchoreCTL Vuln Report
             * `AppCheck Web Application Scanner` - AppCheck Web Application Scanner
@@ -132,6 +133,7 @@ class ImportScan:
             * `Immuniweb Scan` - Immuniweb Scan
             * `IntSights Report` - IntSights Report
             * `Invicti Scan` - Invicti Scan
+            * `IriusRisk Threats Scan` - IriusRisk Threats Scan
             * `JFrog Xray API Summary Artifact Scan` - JFrog Xray API Summary Artifact Scan
             * `JFrog Xray On Demand Binary Scan` - JFrog Xray On Demand Binary Scan
             * `JFrog Xray Scan` - JFrog Xray Scan
@@ -171,6 +173,7 @@ class ImportScan:
             * `Openscap Vulnerability Scan` - Openscap Vulnerability Scan
             * `OpenVAS Parser` - OpenVAS Parser
             * `OpenVAS Parser v2` - OpenVAS Parser v2
+            * `Orca Security Alerts` - Orca Security Alerts
             * `ORT evaluated model Importer` - ORT evaluated model Importer
             * `OssIndex Devaudit SCA Scan Importer` - OssIndex Devaudit SCA Scan Importer
             * `OSV Scan` - OSV Scan
@@ -188,6 +191,7 @@ class ImportScan:
             * `Qualys Hacker Guardian Scan` - Qualys Hacker Guardian Scan
             * `Qualys Infrastructure Scan (WebGUI XML)` - Qualys Infrastructure Scan (WebGUI XML)
             * `Qualys Scan` - Qualys Scan
+            * `Qualys VMDR` - Qualys VMDR
             * `Qualys Webapp Scan` - Qualys Webapp Scan
             * `Rapplex Scan` - Rapplex Scan
             * `Red Hat Satellite` - Red Hat Satellite
@@ -242,10 +246,10 @@ class ImportScan:
             * `WFuzz JSON report` - WFuzz JSON report
             * `Whispers Scan` - Whispers Scan
             * `WhiteHat Sentinel` - WhiteHat Sentinel
-            * `Wizcli Dir Scan` - Wiz CLI Scan (Directory)
-            * `Wizcli IaC Scan` - Wiz CLI Scan (IaC)
-            * `Wizcli Img Scan` - Wiz CLI Scan (Image)
             * `Wiz Scan` - Wiz Scan
+            * `Wizcli Dir Scan` - Wizcli Dir Scan
+            * `Wizcli IaC Scan` - Wizcli IaC Scan
+            * `Wizcli Img Scan` - Wizcli Img Scan
             * `Wpscan` - Wpscan
             * `Xanitizer Scan` - Xanitizer Scan
             * `Xeol Parser` - Xeol Parser
@@ -289,14 +293,13 @@ class ImportScan:
 
             * `component_name` - Component Name
             * `component_name+component_version` - Component Name + Version
-            * `component_name+component_version+file_path` - Component Name + Version + File path
             * `file_path` - File path
             * `finding_title` - Finding Title
             * `vuln_id_from_tool` - Vulnerability ID from Tool
         create_finding_groups_for_all_findings (bool | Unset): If set to false, finding groups will only be created when
             there is more than one grouped finding Default: True.
         apply_tags_to_findings (bool | Unset): If set to True, the tags will be applied to the findings
-        apply_tags_to_endpoints (bool | Unset): If set to True, the tags will be applied to the endpoints
+        apply_tags_to_endpoints (bool | Unset): If set to True, the tags will be applied to the locations
         engagement (int | Unset):
         tags (list[str] | Unset): Add tags that help describe this scan.
         close_old_findings (bool | Unset): Old findings no longer present in the new report get closed as mitigated when

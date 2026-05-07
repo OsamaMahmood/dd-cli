@@ -39,9 +39,9 @@ class Asset:
         findings_list (list[int]):
         asset_meta (list[ProductMeta]):
         organization (int):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
         name (str):
         description (str):
-        created (datetime.datetime | None):
         members (list[int]):
         authorization_groups (list[int]):
         tags (list[str] | Unset):
@@ -93,9 +93,9 @@ class Asset:
     findings_list: list[int]
     asset_meta: list[ProductMeta]
     organization: int
+    created: datetime.datetime | None
     name: str
     description: str
-    created: datetime.datetime | None
     members: list[int]
     authorization_groups: list[int]
     tags: list[str] | Unset = UNSET
@@ -144,15 +144,15 @@ class Asset:
 
         organization = self.organization
 
-        name = self.name
-
-        description = self.description
-
         created: None | str
         if isinstance(self.created, datetime.datetime):
             created = self.created.isoformat()
         else:
             created = self.created
+
+        name = self.name
+
+        description = self.description
 
         members = self.members
 
@@ -277,9 +277,9 @@ class Asset:
                 "findings_list": findings_list,
                 "asset_meta": asset_meta,
                 "organization": organization,
+                "created": created,
                 "name": name,
                 "description": description,
-                "created": created,
                 "members": members,
                 "authorization_groups": authorization_groups,
             }
@@ -348,10 +348,6 @@ class Asset:
 
         organization = d.pop("organization")
 
-        name = d.pop("name")
-
-        description = d.pop("description")
-
         def _parse_created(data: object) -> datetime.datetime | None:
             if data is None:
                 return data
@@ -366,6 +362,10 @@ class Asset:
             return cast(datetime.datetime | None, data)
 
         created = _parse_created(d.pop("created"))
+
+        name = d.pop("name")
+
+        description = d.pop("description")
 
         members = cast(list[int], d.pop("members"))
 
@@ -628,9 +628,9 @@ class Asset:
             findings_list=findings_list,
             asset_meta=asset_meta,
             organization=organization,
+            created=created,
             name=name,
             description=description,
-            created=created,
             members=members,
             authorization_groups=authorization_groups,
             tags=tags,

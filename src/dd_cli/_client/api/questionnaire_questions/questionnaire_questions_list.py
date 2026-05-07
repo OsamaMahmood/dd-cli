@@ -63,7 +63,8 @@ def sync_detailed(
     limit: int | Unset = UNSET,
     offset: int | Unset = UNSET,
 ) -> Response[PaginatedQuestionnaireQuestionList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -94,7 +95,8 @@ def sync(
     limit: int | Unset = UNSET,
     offset: int | Unset = UNSET,
 ) -> PaginatedQuestionnaireQuestionList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -120,7 +122,8 @@ async def asyncio_detailed(
     limit: int | Unset = UNSET,
     offset: int | Unset = UNSET,
 ) -> Response[PaginatedQuestionnaireQuestionList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -149,7 +152,8 @@ async def asyncio(
     limit: int | Unset = UNSET,
     offset: int | Unset = UNSET,
 ) -> PaginatedQuestionnaireQuestionList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):

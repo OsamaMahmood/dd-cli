@@ -30,6 +30,7 @@ class PatchedFindingRequest:
         found_by (list[int] | Unset):
         vulnerability_ids (list[VulnerabilityIdRequest] | Unset):
         reporter (int | Unset):
+        endpoints (list[int] | Unset):
         title (str | Unset): A short description of the flaw.
         date (datetime.date | Unset): The date the flaw was discovered.
         sla_start_date (datetime.date | None | Unset): (readonly)The date used as start date for SLA calculation. Set by
@@ -110,6 +111,7 @@ class PatchedFindingRequest:
     found_by: list[int] | Unset = UNSET
     vulnerability_ids: list[VulnerabilityIdRequest] | Unset = UNSET
     reporter: int | Unset = UNSET
+    endpoints: list[int] | Unset = UNSET
     title: str | Unset = UNSET
     date: datetime.date | Unset = UNSET
     sla_start_date: datetime.date | None | Unset = UNSET
@@ -200,6 +202,10 @@ class PatchedFindingRequest:
                 vulnerability_ids.append(vulnerability_ids_item)
 
         reporter = self.reporter
+
+        endpoints: list[int] | Unset = UNSET
+        if not isinstance(self.endpoints, Unset):
+            endpoints = self.endpoints
 
         title = self.title
 
@@ -486,6 +492,8 @@ class PatchedFindingRequest:
             field_dict["vulnerability_ids"] = vulnerability_ids
         if reporter is not UNSET:
             field_dict["reporter"] = reporter
+        if endpoints is not UNSET:
+            field_dict["endpoints"] = endpoints
         if title is not UNSET:
             field_dict["title"] = title
         if date is not UNSET:
@@ -648,6 +656,12 @@ class PatchedFindingRequest:
 
         if not isinstance(self.reporter, Unset):
             files.append(("reporter", (None, str(self.reporter).encode(), "text/plain")))
+
+        if not isinstance(self.endpoints, Unset):
+            for endpoints_item_element in self.endpoints:
+                files.append(
+                    ("endpoints", (None, str(endpoints_item_element).encode(), "text/plain"))
+                )
 
         if not isinstance(self.title, Unset):
             files.append(("title", (None, str(self.title).encode(), "text/plain")))
@@ -1173,6 +1187,8 @@ class PatchedFindingRequest:
 
         reporter = d.pop("reporter", UNSET)
 
+        endpoints = cast(list[int], d.pop("endpoints", UNSET))
+
         title = d.pop("title", UNSET)
 
         _date = d.pop("date", UNSET)
@@ -1596,6 +1612,7 @@ class PatchedFindingRequest:
             found_by=found_by,
             vulnerability_ids=vulnerability_ids,
             reporter=reporter,
+            endpoints=endpoints,
             title=title,
             date=date,
             sla_start_date=sla_start_date,

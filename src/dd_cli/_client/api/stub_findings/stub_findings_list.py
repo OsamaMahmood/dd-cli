@@ -87,7 +87,8 @@ def sync_detailed(
     severity: str | Unset = UNSET,
     title: str | Unset = UNSET,
 ) -> Response[PaginatedStubFindingList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         date (datetime.date | Unset):
         description (str | Unset):
@@ -133,7 +134,8 @@ def sync(
     severity: str | Unset = UNSET,
     title: str | Unset = UNSET,
 ) -> PaginatedStubFindingList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         date (datetime.date | Unset):
         description (str | Unset):
@@ -174,7 +176,8 @@ async def asyncio_detailed(
     severity: str | Unset = UNSET,
     title: str | Unset = UNSET,
 ) -> Response[PaginatedStubFindingList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         date (datetime.date | Unset):
         description (str | Unset):
@@ -218,7 +221,8 @@ async def asyncio(
     severity: str | Unset = UNSET,
     title: str | Unset = UNSET,
 ) -> PaginatedStubFindingList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         date (datetime.date | Unset):
         description (str | Unset):

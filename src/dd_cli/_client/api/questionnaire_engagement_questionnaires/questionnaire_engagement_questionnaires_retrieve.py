@@ -54,7 +54,8 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 ) -> Response[QuestionnaireEngagementSurvey]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
 
@@ -82,7 +83,8 @@ def sync(
     *,
     client: AuthenticatedClient,
 ) -> QuestionnaireEngagementSurvey | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
 
@@ -105,7 +107,8 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 ) -> Response[QuestionnaireEngagementSurvey]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
 
@@ -131,7 +134,8 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 ) -> QuestionnaireEngagementSurvey | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
 

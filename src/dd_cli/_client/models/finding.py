@@ -40,6 +40,8 @@ class Finding:
         jira_change (datetime.datetime | None):
         display_status (str):
         finding_groups (list[FindingGroup]):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
+        updated (datetime.datetime | None): Time that the object was most recently saved to the database
         title (str): A short description of the flaw.
         url (None | str): External reference that provides more information about this flaw.
         severity (str): The severity level of this flaw (Critical, High, Medium, Low, Info).
@@ -52,13 +54,10 @@ class Finding:
         param (None | str): Parameter used to trigger the issue (DAST).
         payload (None | str): Payload used to attack the service / application and trigger the bug / problem.
         hash_code (None | str): A hash over a configurable set of fields that is used for findings deduplication.
-        created (datetime.datetime | None): The date the finding was created inside DefectDojo.
         scanner_confidence (int | None): Confidence level of vulnerability which is supplied by the scanner.
         test (int): The test that is associated with this flaw.
         duplicate_finding (int | None): Link to the original finding if this finding is a duplicate.
         last_reviewed_by (int | None): Provides the person who last reviewed the flaw.
-        endpoints (list[int]): The hosts within the product that are susceptible to this flaw. + The status of the
-            endpoint associated with this flaw (Vulnerable, Mitigated, ...).
         notes (list[Note]):
         files (list[int]): Files(s) related to the flaw.
         mitigated (datetime.datetime | None | Unset):
@@ -67,6 +66,7 @@ class Finding:
         push_to_jira (bool | Unset):  Default: False.
         vulnerability_ids (list[VulnerabilityId] | Unset):
         reporter (int | Unset):
+        endpoints (list[int] | Unset):
         date (datetime.date | Unset): The date the flaw was discovered.
         sla_start_date (datetime.date | None | Unset): (readonly)The date used as start date for SLA calculation. Set by
             expiring risk acceptances. Empty by default, causing a fallback to 'date'.
@@ -149,6 +149,8 @@ class Finding:
     jira_change: datetime.datetime | None
     display_status: str
     finding_groups: list[FindingGroup]
+    created: datetime.datetime | None
+    updated: datetime.datetime | None
     title: str
     url: None | str
     severity: str
@@ -160,12 +162,10 @@ class Finding:
     param: None | str
     payload: None | str
     hash_code: None | str
-    created: datetime.datetime | None
     scanner_confidence: int | None
     test: int
     duplicate_finding: int | None
     last_reviewed_by: int | None
-    endpoints: list[int]
     notes: list[Note]
     files: list[int]
     mitigated: datetime.datetime | None | Unset = UNSET
@@ -174,6 +174,7 @@ class Finding:
     push_to_jira: bool | Unset = False
     vulnerability_ids: list[VulnerabilityId] | Unset = UNSET
     reporter: int | Unset = UNSET
+    endpoints: list[int] | Unset = UNSET
     date: datetime.date | Unset = UNSET
     sla_start_date: datetime.date | None | Unset = UNSET
     sla_expiration_date: datetime.date | None | Unset = UNSET
@@ -277,6 +278,18 @@ class Finding:
             finding_groups_item = finding_groups_item_data.to_dict()
             finding_groups.append(finding_groups_item)
 
+        created: None | str
+        if isinstance(self.created, datetime.datetime):
+            created = self.created.isoformat()
+        else:
+            created = self.created
+
+        updated: None | str
+        if isinstance(self.updated, datetime.datetime):
+            updated = self.updated.isoformat()
+        else:
+            updated = self.updated
+
         title = self.title
 
         url: None | str
@@ -311,12 +324,6 @@ class Finding:
         hash_code: None | str
         hash_code = self.hash_code
 
-        created: None | str
-        if isinstance(self.created, datetime.datetime):
-            created = self.created.isoformat()
-        else:
-            created = self.created
-
         scanner_confidence: int | None
         scanner_confidence = self.scanner_confidence
 
@@ -327,8 +334,6 @@ class Finding:
 
         last_reviewed_by: int | None
         last_reviewed_by = self.last_reviewed_by
-
-        endpoints = self.endpoints
 
         notes = []
         for notes_item_data in self.notes:
@@ -365,6 +370,10 @@ class Finding:
                 vulnerability_ids.append(vulnerability_ids_item)
 
         reporter = self.reporter
+
+        endpoints: list[int] | Unset = UNSET
+        if not isinstance(self.endpoints, Unset):
+            endpoints = self.endpoints
 
         date: str | Unset = UNSET
         if not isinstance(self.date, Unset):
@@ -646,6 +655,8 @@ class Finding:
                 "jira_change": jira_change,
                 "display_status": display_status,
                 "finding_groups": finding_groups,
+                "created": created,
+                "updated": updated,
                 "title": title,
                 "url": url,
                 "severity": severity,
@@ -657,12 +668,10 @@ class Finding:
                 "param": param,
                 "payload": payload,
                 "hash_code": hash_code,
-                "created": created,
                 "scanner_confidence": scanner_confidence,
                 "test": test,
                 "duplicate_finding": duplicate_finding,
                 "last_reviewed_by": last_reviewed_by,
-                "endpoints": endpoints,
                 "notes": notes,
                 "files": files,
             }
@@ -679,6 +688,8 @@ class Finding:
             field_dict["vulnerability_ids"] = vulnerability_ids
         if reporter is not UNSET:
             field_dict["reporter"] = reporter
+        if endpoints is not UNSET:
+            field_dict["endpoints"] = endpoints
         if date is not UNSET:
             field_dict["date"] = date
         if sla_start_date is not UNSET:
@@ -881,6 +892,36 @@ class Finding:
 
             finding_groups.append(finding_groups_item)
 
+        def _parse_created(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                created_type_0 = isoparse(data)
+
+                return created_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        created = _parse_created(d.pop("created"))
+
+        def _parse_updated(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                updated_type_0 = isoparse(data)
+
+                return updated_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        updated = _parse_updated(d.pop("updated"))
+
         title = d.pop("title")
 
         def _parse_url(data: object) -> None | str:
@@ -949,21 +990,6 @@ class Finding:
 
         hash_code = _parse_hash_code(d.pop("hash_code"))
 
-        def _parse_created(data: object) -> datetime.datetime | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                created_type_0 = isoparse(data)
-
-                return created_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(datetime.datetime | None, data)
-
-        created = _parse_created(d.pop("created"))
-
         def _parse_scanner_confidence(data: object) -> int | None:
             if data is None:
                 return data
@@ -986,8 +1012,6 @@ class Finding:
             return cast(int | None, data)
 
         last_reviewed_by = _parse_last_reviewed_by(d.pop("last_reviewed_by"))
-
-        endpoints = cast(list[int], d.pop("endpoints"))
 
         notes = []
         _notes = d.pop("notes")
@@ -1038,6 +1062,8 @@ class Finding:
                 vulnerability_ids.append(vulnerability_ids_item)
 
         reporter = d.pop("reporter", UNSET)
+
+        endpoints = cast(list[int], d.pop("endpoints", UNSET))
 
         _date = d.pop("date", UNSET)
         date: datetime.date | Unset
@@ -1466,6 +1492,8 @@ class Finding:
             jira_change=jira_change,
             display_status=display_status,
             finding_groups=finding_groups,
+            created=created,
+            updated=updated,
             title=title,
             url=url,
             severity=severity,
@@ -1477,12 +1505,10 @@ class Finding:
             param=param,
             payload=payload,
             hash_code=hash_code,
-            created=created,
             scanner_confidence=scanner_confidence,
             test=test,
             duplicate_finding=duplicate_finding,
             last_reviewed_by=last_reviewed_by,
-            endpoints=endpoints,
             notes=notes,
             files=files,
             mitigated=mitigated,
@@ -1491,6 +1517,7 @@ class Finding:
             push_to_jira=push_to_jira,
             vulnerability_ids=vulnerability_ids,
             reporter=reporter,
+            endpoints=endpoints,
             date=date,
             sla_start_date=sla_start_date,
             sla_expiration_date=sla_expiration_date,

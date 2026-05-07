@@ -25,6 +25,8 @@ class FindingCreate:
         notes (list[int | None]):
         test (int):
         found_by (list[int]):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
+        updated (datetime.datetime | None): Time that the object was most recently saved to the database
         title (str): A short description of the flaw.
         severity (str): The severity level of this flaw (Critical, High, Medium, Low, Info).
         description (str): Longer more descriptive information about the flaw.
@@ -37,7 +39,6 @@ class FindingCreate:
         param (None | str): Parameter used to trigger the issue (DAST).
         payload (None | str): Payload used to attack the service / application and trigger the bug / problem.
         hash_code (None | str): A hash over a configurable set of fields that is used for findings deduplication.
-        created (datetime.datetime | None): The date the finding was created inside DefectDojo.
         scanner_confidence (int | None): Confidence level of vulnerability which is supplied by the scanner.
         duplicate_finding (int | None): Link to the original finding if this finding is a duplicate.
         last_reviewed_by (int | None): Provides the person who last reviewed the flaw.
@@ -123,6 +124,8 @@ class FindingCreate:
     notes: list[int | None]
     test: int
     found_by: list[int]
+    created: datetime.datetime | None
+    updated: datetime.datetime | None
     title: str
     severity: str
     description: str
@@ -134,7 +137,6 @@ class FindingCreate:
     param: None | str
     payload: None | str
     hash_code: None | str
-    created: datetime.datetime | None
     scanner_confidence: int | None
     duplicate_finding: int | None
     last_reviewed_by: int | None
@@ -212,6 +214,18 @@ class FindingCreate:
 
         found_by = self.found_by
 
+        created: None | str
+        if isinstance(self.created, datetime.datetime):
+            created = self.created.isoformat()
+        else:
+            created = self.created
+
+        updated: None | str
+        if isinstance(self.updated, datetime.datetime):
+            updated = self.updated.isoformat()
+        else:
+            updated = self.updated
+
         title = self.title
 
         severity = self.severity
@@ -244,12 +258,6 @@ class FindingCreate:
 
         hash_code: None | str
         hash_code = self.hash_code
-
-        created: None | str
-        if isinstance(self.created, datetime.datetime):
-            created = self.created.isoformat()
-        else:
-            created = self.created
 
         scanner_confidence: int | None
         scanner_confidence = self.scanner_confidence
@@ -565,6 +573,8 @@ class FindingCreate:
                 "notes": notes,
                 "test": test,
                 "found_by": found_by,
+                "created": created,
+                "updated": updated,
                 "title": title,
                 "severity": severity,
                 "description": description,
@@ -576,7 +586,6 @@ class FindingCreate:
                 "param": param,
                 "payload": payload,
                 "hash_code": hash_code,
-                "created": created,
                 "scanner_confidence": scanner_confidence,
                 "duplicate_finding": duplicate_finding,
                 "last_reviewed_by": last_reviewed_by,
@@ -725,6 +734,36 @@ class FindingCreate:
 
         found_by = cast(list[int], d.pop("found_by"))
 
+        def _parse_created(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                created_type_0 = isoparse(data)
+
+                return created_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        created = _parse_created(d.pop("created"))
+
+        def _parse_updated(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                updated_type_0 = isoparse(data)
+
+                return updated_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        updated = _parse_updated(d.pop("updated"))
+
         title = d.pop("title")
 
         severity = d.pop("severity")
@@ -787,21 +826,6 @@ class FindingCreate:
             return cast(None | str, data)
 
         hash_code = _parse_hash_code(d.pop("hash_code"))
-
-        def _parse_created(data: object) -> datetime.datetime | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                created_type_0 = isoparse(data)
-
-                return created_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(datetime.datetime | None, data)
-
-        created = _parse_created(d.pop("created"))
 
         def _parse_scanner_confidence(data: object) -> int | None:
             if data is None:
@@ -1288,6 +1312,8 @@ class FindingCreate:
             notes=notes,
             test=test,
             found_by=found_by,
+            created=created,
+            updated=updated,
             title=title,
             severity=severity,
             description=description,
@@ -1299,7 +1325,6 @@ class FindingCreate:
             param=param,
             payload=payload,
             hash_code=hash_code,
-            created=created,
             scanner_confidence=scanner_confidence,
             duplicate_finding=duplicate_finding,
             last_reviewed_by=last_reviewed_by,

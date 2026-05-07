@@ -8,6 +8,7 @@ class EngagementStatusType2Type1(str, Enum):
     IN_PROGRESS = "In Progress"
     NOT_STARTED = "Not Started"
     ON_HOLD = "On Hold"
+    SCHEDULED = "Scheduled"
     WAITING_FOR_RESOURCE = "Waiting for Resource"
 
     def __str__(self) -> str:

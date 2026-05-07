@@ -31,8 +31,8 @@ class FindingEngagement:
         id (int):
         target_start (datetime.date):
         target_end (datetime.date):
-        created (datetime.datetime | None):
-        updated (datetime.datetime | None):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
+        updated (datetime.datetime | None): Time that the object was most recently saved to the database
         name (None | str | Unset):
         description (None | str | Unset):
         product (FindingProduct | Unset):

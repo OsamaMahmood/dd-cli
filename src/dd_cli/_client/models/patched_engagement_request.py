@@ -55,6 +55,7 @@ class PatchedEngagementRequest:
             * `Completed` - Completed
             * `In Progress` - In Progress
             * `On Hold` - On Hold
+            * `Scheduled` - Scheduled
             * `Waiting for Resource` - Waiting for Resource
         engagement_type (None | PatchedEngagementRequestEngagementTypeType1 |
             PatchedEngagementRequestEngagementTypeType2Type1 | PatchedEngagementRequestEngagementTypeType3Type1 | Unset): *

@@ -20,6 +20,7 @@ class MetaRequest:
         value (str):
         product (int | None | Unset):
         endpoint (int | None | Unset):
+        location (int | None | Unset):
         finding (int | None | Unset):
     """
 
@@ -27,6 +28,7 @@ class MetaRequest:
     value: str
     product: int | None | Unset = UNSET
     endpoint: int | None | Unset = UNSET
+    location: int | None | Unset = UNSET
     finding: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -47,6 +49,12 @@ class MetaRequest:
         else:
             endpoint = self.endpoint
 
+        location: int | None | Unset
+        if isinstance(self.location, Unset):
+            location = UNSET
+        else:
+            location = self.location
+
         finding: int | None | Unset
         if isinstance(self.finding, Unset):
             finding = UNSET
@@ -65,6 +73,8 @@ class MetaRequest:
             field_dict["product"] = product
         if endpoint is not UNSET:
             field_dict["endpoint"] = endpoint
+        if location is not UNSET:
+            field_dict["location"] = location
         if finding is not UNSET:
             field_dict["finding"] = finding
 
@@ -88,6 +98,12 @@ class MetaRequest:
                 files.append(("endpoint", (None, str(self.endpoint).encode(), "text/plain")))
             else:
                 files.append(("endpoint", (None, str(self.endpoint).encode(), "text/plain")))
+
+        if not isinstance(self.location, Unset):
+            if isinstance(self.location, int):
+                files.append(("location", (None, str(self.location).encode(), "text/plain")))
+            else:
+                files.append(("location", (None, str(self.location).encode(), "text/plain")))
 
         if not isinstance(self.finding, Unset):
             if isinstance(self.finding, int):
@@ -125,6 +141,15 @@ class MetaRequest:
 
         endpoint = _parse_endpoint(d.pop("endpoint", UNSET))
 
+        def _parse_location(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        location = _parse_location(d.pop("location", UNSET))
+
         def _parse_finding(data: object) -> int | None | Unset:
             if data is None:
                 return data
@@ -139,6 +164,7 @@ class MetaRequest:
             value=value,
             product=product,
             endpoint=endpoint,
+            location=location,
             finding=finding,
         )
 

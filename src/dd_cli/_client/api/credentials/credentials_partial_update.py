@@ -82,7 +82,8 @@ def sync_detailed(
     | PatchedCredentialRequest
     | Unset = UNSET,
 ) -> Response[Credential]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialRequest | Unset):
@@ -118,7 +119,8 @@ def sync(
     | PatchedCredentialRequest
     | Unset = UNSET,
 ) -> Credential | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialRequest | Unset):
@@ -149,7 +151,8 @@ async def asyncio_detailed(
     | PatchedCredentialRequest
     | Unset = UNSET,
 ) -> Response[Credential]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialRequest | Unset):
@@ -183,7 +186,8 @@ async def asyncio(
     | PatchedCredentialRequest
     | Unset = UNSET,
 ) -> Credential | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialRequest | Unset):

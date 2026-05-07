@@ -73,7 +73,8 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: StubFindingRequest | StubFindingRequest | StubFindingRequest | Unset = UNSET,
 ) -> Response[StubFinding]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (StubFindingRequest):
@@ -106,7 +107,8 @@ def sync(
     client: AuthenticatedClient,
     body: StubFindingRequest | StubFindingRequest | StubFindingRequest | Unset = UNSET,
 ) -> StubFinding | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (StubFindingRequest):
@@ -134,7 +136,8 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: StubFindingRequest | StubFindingRequest | StubFindingRequest | Unset = UNSET,
 ) -> Response[StubFinding]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (StubFindingRequest):
@@ -165,7 +168,8 @@ async def asyncio(
     client: AuthenticatedClient,
     body: StubFindingRequest | StubFindingRequest | StubFindingRequest | Unset = UNSET,
 ) -> StubFinding | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (StubFindingRequest):
