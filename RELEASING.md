@@ -99,16 +99,62 @@ process is reproducible if the trust relationship needs to be rebuilt.
 3. The first successful tag-driven workflow run creates the `dd-cli`
    project on PyPI (the publisher transitions from "pending" to active).
 
-### What the workflow does NOT do yet
+## Docker publish
 
-These land in the rest of M5:
+Tag pushes also build and push a multi-arch (linux/amd64 + linux/arm64)
+container image to two registries via the
+[`publish-docker`](.github/workflows/release.yml) job:
 
-- **Docker images** to `ghcr.io` and Docker Hub
-- **Homebrew formula bump** PR to `OsamaMahmood/homebrew-tap`
-- **SBOM** generation, **cosign** signing
+- `ghcr.io/osamamahmood/dd-cli`
+- `osamamahmood/dd-cli` (Docker Hub)
 
-The current workflow is structured so adding these is additive — new jobs
-that depend on `build-and-release`, not a rewrite.
+Tag aliases follow standard semver convention:
+
+| Tag pushed | Image tags produced |
+|---|---|
+| `v1.2.3` (stable) | `1.2.3`, `1.2`, `1`, `latest` |
+| `v2.0.0-rc.1` (prerelease) | `2.0.0-rc.1` only |
+
+### One-time setup
+
+Already done for this repo; documented for reproducibility.
+
+1. **Docker Hub credentials.** On Docker Hub, create an access token at
+   [Account Settings → Security](https://hub.docker.com/settings/security).
+   In this repo, add two secrets at **Settings → Secrets and variables →
+   Actions**:
+   - `DOCKERHUB_USERNAME` — Docker Hub username
+   - `DOCKERHUB_TOKEN` — the access token (NOT the account password)
+
+2. **`docker` GitHub Actions environment.** Same as `pypi`: create at
+   **Settings → Environments → New environment** named `docker`, with
+   the same `v*` tag deployment-branch rule.
+
+3. **GHCR.** No setup needed — the workflow uses the built-in
+   `GITHUB_TOKEN` with `packages: write` permission. The first
+   successful push creates the package under your GitHub user/org.
+
+### Allowlist additions required
+
+The Docker publish step uses these third-party actions (all official
+PyPA / Docker / GitHub-published). Add to your Actions allowlist at
+[**Settings → Actions → General**](https://github.com/settings/actions):
+
+```
+docker/setup-qemu-action@*
+docker/setup-buildx-action@*
+docker/build-push-action@*
+```
+
+(`docker/login-action@*` is already allowlisted.)
+
+## What the workflow does NOT do yet
+
+- **Homebrew formula bump** PR to `OsamaMahmood/homebrew-tap` —
+  deferred post-v2.0; most users will reach for `pip` or `pipx`
+  rather than `brew install`, and per-release resource-list
+  generation is a real maintenance cost
+- **cosign** signing of the published artifacts
 
 ## Backfilling a release for an existing tag
 
