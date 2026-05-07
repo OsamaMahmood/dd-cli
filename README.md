@@ -1,313 +1,273 @@
-# dd-import
+# dd-cli
 
-*This is a continuation and enhancement of the original dd-import project.*
+[![PyPI](https://img.shields.io/pypi/v/dd-cli.svg)](https://pypi.org/project/dd-cli/)
+[![Python](https://img.shields.io/pypi/pyversions/dd-cli.svg)](https://pypi.org/project/dd-cli/)
+[![CI](https://github.com/OsamaMahmood/dd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/OsamaMahmood/dd-cli/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE.txt)
 
-> A utility to (re-)import findings and language data into [DefectDojo](https://www.defectdojo.org/)
-
-Findings and languages can be imported into DefectDojo via an [API](https://defectdojo.github.io/django-DefectDojo/integrations/api-v2-docs/). To make automated build and deploy pipelines easier to implement, `dd-import` provides some convenience functions:
-
-- Product types, products, engagements and tests will be created if they are not existing. This avoids manual preparation in DefectDojo or complicated steps within the pipeline.
-- Product types, products, engagements and tests are referenced by name. This make pipelines more readable than using IDs.
-- Build information for `build_id`, `commit_hash` and `branch_tag` can be updated when uploading findings.
-- No need to deal with `curl` and its syntax within the pipeline. This makes pipelines shorter and better readable.
-- All parameters are provided via environment variables, which works well with pipeline definitions like GitHub Actions or GitLab CI.
-
-## User guide
-
-### Installation and commands
-
-**Python**
-
-`dd-import` can be installed with pip. Only Python 3.8 and up is supported.
+A production-grade CLI for managing [DefectDojo](https://www.defectdojo.org/) — list / create / update / delete every resource the API exposes, plus a fully backward-compatible import path for users coming from the original [`dd-import`](https://github.com/MaibornWolff/dd-import) tool (now archived).
 
 ```bash
-pip install dd-import
+pip install dd-cli
 ```
 
-The command `dd-reimport-findings` re-imports findings into DefectDojo. Even though the name suggests otherwise, you do not need to do an initial import first.
+```text
+$ dd --help
 
-The command `dd-import-languages` imports languages data that have been gathered with the tool [cloc](https://github.com/AlDanial/cloc), see [Languages and lines of code](https://defectdojo.github.io/django-DefectDojo/integrations/languages/) for more details.
+ Usage: dd [OPTIONS] COMMAND [ARGS]...
 
+ Production-grade CLI for managing DefectDojo.
 
-**Docker**
+ Commands:
+   configure          Interactively create or update a profile.
+   ping               Verify connectivity and authentication against DefectDojo.
+   config             Manage dd-cli profiles and on-disk configuration.
+   products           List and get DefectDojo products.
+   product-types      List and get DefectDojo product types.
+   engagements        List and get DefectDojo engagements.
+   tests              List and get DefectDojo tests.
+   findings           List and get DefectDojo findings.
+   users              List and get DefectDojo users.
+   dojo-groups        List and get DefectDojo authorization groups.
+   jira-instances     List and get DefectDojo Jira instance configurations.
+   risk-acceptances   List and get DefectDojo risk acceptances.
+   metadata           List and get DefectDojo metadata entries.
+   endpoints          List and get DefectDojo endpoints.
+   finding-templates  List and get DefectDojo finding templates.
+   import             Import scanner findings or language data into DefectDojo.
+```
 
-Docker images can be found in the releases section of this repository.
+## Why dd-cli
 
-A re-import of findings can be started with
+- **Complete API coverage.** Every read and write across 12 DefectDojo resource types — products, product-types, engagements, tests, findings, users, dojo-groups, jira-instances, risk-acceptances, metadata, endpoints, finding-templates — driven from a typed client generated from DefectDojo's OpenAPI spec.
+- **Drop-in replacement for `dd-import`.** Existing CI pipelines that invoke `dd-reimport-findings` or `dd-import-languages` with `DD_*` env vars keep working unchanged. The legacy console scripts are wired as thin shims over the new workflow code.
+- **Pleasant interactive use.** Rich tables, JSON / YAML output for piping, profiles for switching between DefectDojo instances, `dd configure` interactive setup, `dd <resource> edit <id>` opens the resource as YAML in `$EDITOR`, action verbs like `dd findings close`, `risk-accept`, `dd engagements close/reopen`.
+- **Safe writes.** `--dry-run` previews every mutation without sending HTTP. `--yes`/`-y` skips the destructive-op confirmation prompt for scripts. Typed exit codes (auth=3, not-found=5, etc.) so CI can branch on what went wrong.
+- **Validated against real DefectDojo.** 24 integration tests run against a live instance per release, including a full Trivy-report import round-trip.
+
+## Install
+
+### From PyPI (recommended)
 
 ```bash
-docker run --rm dd-import:latest dd-reimport-findings.sh
+pip install dd-cli
+# or, for an isolated install of the CLI:
+pipx install dd-cli
 ```
 
-Importing languages data can be started with
+`dd`, `dd-reimport-findings`, and `dd-import-languages` go on `PATH`.
 
+### From source
 
 ```bash
-docker run --rm dd-import:latest dd-import-languages.sh
+git clone https://github.com/OsamaMahmood/dd-cli.git
+cd dd-cli
+pip install -e ".[dev,test]"
 ```
 
-Please note you have to set the environment variables as described below and mount a folder containing the file with scan results when running the docker container.
+### Docker
 
-`/usr/local/dd-import` is the working directory of the docker image, all commands are located in the `/usr/local/dd-import/bin` folder.
+```bash
+podman run --rm \
+  -e DD_URL=https://defectdojo.example.com \
+  -e DD_API_KEY=… \
+  ghcr.io/osamamahmood/dd-cli:latest \
+  ping     # or any other dd subcommand
+```
 
-### Parameters
+> Docker images are published to `ghcr.io/osamamahmood/dd-cli` and `osamamahmood/dd-cli` on each tag. Until those land in M5b, build locally: `podman build -t dd-cli .`
 
-All parameters need to be provided as environment variables:
+## Quickstart
 
-## 🚀 Enhanced Features (NEW!)
+```bash
+# 1. Set up a profile (writes ~/.config/dd-cli/config.toml)
+dd configure
+# Profile name [default]: default
+# DefectDojo URL: https://defectdojo.example.com
+# API key (hidden): …
+# Verify TLS certificates? [Y/n]: Y
 
-**Auto-Create Workflow**: Set `DD_AUTO_CREATE_CONTEXT=true` to enable one-call workflow that automatically creates all resources!
+# 2. Confirm it works
+dd ping
+# {"ok": true, "user": "alice", "url": "https://defectdojo.example.com"}
 
-**Rich Metadata**: Add business context with criticality levels, platforms, lifecycle stages, and comprehensive tagging.
+# 3. Browse
+dd products list --output json | jq
+dd findings list --severity Critical --active --output json | jq
 
-**Smart Workflow Selection**: Automatically chooses between traditional multi-call workflow and new auto-create workflow.
+# 4. Manage
+dd findings close 42 --note "Fixed in v2.1.0" --yes
+dd findings risk-accept 51 --until 2026-12-31 --reason "Compensating WAF rule"
+dd engagements close 12 --yes
+dd users deactivate alice --yes
 
-## Environment Variables
+# 5. Import a scanner report
+dd import findings \
+  --file trivy.json \
+  --scanner "Trivy Scan" \
+  --product-type "Web Apps" \
+  --product "Payments" \
+  --auto-create
+```
 
-### Core Parameters (Required)
+## Configuration
 
-| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
-|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
-| DD_URL                              | Mandatory          | Mandatory        | Base URL of the DefectDojo instance                                                               |
-| DD_API_KEY                          | Mandatory          | Mandatory        | Shall be defined as a secret, eg. a protected variable in GitLab or an encrypted secret in GitHub |
-| DD_PRODUCT_TYPE_NAME                | Mandatory          | Mandatory        | If a product type with this name does not exist, it will be created                               |
-| DD_PRODUCT_NAME                     | Mandatory          | Mandatory        | If a product with this name does not exist, it will be created                                    |
-| DD_ENGAGEMENT_NAME                  | Mandatory          | -                | If an engagement with this name does not exist for the given product, it will be created          |
-| DD_ENGAGEMENT_TARGET_START          | Optional           | -                | Format: YYYY-MM-DD, default: `today`. The target start date for a newly created engagement.       |
-| DD_ENGAGEMENT_TARGET_END            | Optional           | -                | Format: YYYY-MM-DD, default: `2999-12-31`. The target start date for a newly created engagement.  |
-| DD_TEST_NAME                        | Mandatory          | -                | If a test with this name does not exist for the given engagement, it will be created              |
-| DD_TEST_TYPE_NAME                   | Mandatory          | -                | From DefectDojo's list of test types, eg. `Trivy Scan`                                            |
-| DD_FILE_NAME                        | Optional           | Mandatory        |                                                                                                   |
-| DD_ACTIVE                           | Optional           | -                | Default: `true`                                                                                   |
-| DD_VERIFIED                         | Optional           | -                | Default: `true`                                                                                   |
-| DD_MINIMUM_SEVERITY                 | Optional           | -                |                                                                                                   |
-| DD_GROUP_BY                         | Optional           | -                | Group by file path, component name, component name + version                                      |
-| DD_PUSH_TO_JIRA                     | Optional           | -                | Default: `false`                                                                                  |
-| DD_CLOSE_OLD_FINDINGS               | Optional           | -                | Default: `true`                                                                                   |
-| DD_CLOSE_OLD_FINDINGS_PRODUCT_SCOPE | Optional           | -                | Default: `false`                                                                                  |
-| DD_DO_NOT_REACTIVATE                | Optional           | -                | Default: `false`                                                                                  |
-| DD_VERSION                          | Optional           | -                |                                                                                                   |
-| DD_ENDPOINT_ID                      | Optional           | -                |                                                                                                   |
-| DD_SERVICE                          | Optional           | -                |                                                                                                   |
-| DD_BUILD_ID                         | Optional           | -                |                                                                                                   |
-| DD_COMMIT_HASH                      | Optional           | -                |                                                                                                   |
-| DD_BRANCH_TAG                       | Optional           | -                |                                                                                                   |
-| DD_API_SCAN_CONFIGURATION_ID        | Optional           | -                | Id of the API scan configuration for API based parsers, e.g. SonarQube                            |
-| DD_SOURCE_CODE_MANAGEMENT_URI       | Optional           | -                |                                                                                                   |
-| DD_SSL_VERIFY                       | Optional           | Optional         | Disable SSL verification by setting to `false` or `0`. Default: `true`                            |
-| DD_EXTRA_HEADER_1         | Optional           | Optional         | If extra header key is needed for auth in wafs or similar |
-| DD_EXTRA_HEADER_1_VALUE   | Optional           | Optional         | The corresponding value for extra header key |
-| DD_EXTRA_HEADER_2         | Optional           | Optional         | If extra header key is needed for auth in wafs or similar |
-| DD_EXTRA_HEADER_2_VALUE   | Optional           | Optional         | The corresponding value for extra header key |
+dd-cli resolves settings in this order (later wins):
 
-### 🚀 Enhanced Auto-Create Parameters (NEW!)
+1. Built-in defaults
+2. The active profile in `~/.config/dd-cli/config.toml` (or `$DD_CLI_CONFIG_DIR/config.toml`)
+3. `DD_*` environment variables (legacy contract, see [migration](#migrating-from-dd-import))
+4. `DD_CLI_*` environment variables (modern names, take precedence over `DD_*`)
+5. Explicit CLI flags
 
-| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
-|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
-| DD_AUTO_CREATE_CONTEXT              | Optional           | -                | **GAME CHANGER!** `true` = Single API call creates all resources. `false` = Traditional workflow (default) |
-| DD_DEDUPLICATION_ON_ENGAGEMENT      | Optional           | -                | `true` = Scope finding deduplication to engagement level. Default: `false`                       |
+API tokens are stored as `pydantic.SecretStr` and masked in `dd config show` output unless you pass `--show-secrets` to `dd config get api_key`.
 
-### 📊 Enhanced Product Metadata (NEW!)
+### Profiles
 
-| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
-|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
-| DD_PRODUCT_DESCRIPTION              | Optional           | Optional         | Detailed product description (falls back to product name)                                        |
-| DD_PRODUCT_BUSINESS_CRITICALITY     | Optional           | Optional         | `very high`, `high`, `medium`, `low`, `very low`, `none`                                          |
-| DD_PRODUCT_PLATFORM                 | Optional           | Optional         | `web service`, `desktop`, `iot`, `mobile`, `web`                                                  |
-| DD_PRODUCT_LIFECYCLE                | Optional           | Optional         | `construction`, `production`, `retirement`                                                        |
-| DD_PRODUCT_ORIGIN                   | Optional           | Optional         | `third party library`, `purchased`, `contractor`, `internal`, `open source`, `outsourced`        |
-| DD_PRODUCT_INTERNET_ACCESSIBLE      | Optional           | Optional         | `true`/`false` - Is the product internet accessible?                                             |
-| DD_PRODUCT_EXTERNAL_AUDIENCE        | Optional           | Optional         | `true`/`false` - Does the product have external users?                                           |
-| DD_PRODUCT_TAGS                     | Optional           | Optional         | Comma-separated tags, e.g., `security,webapp,critical`                                           |
+Switch between multiple DefectDojo instances with named profiles:
 
-### 🎯 Enhanced Engagement Metadata (NEW!)
+```bash
+dd configure --profile prod
+dd configure --profile staging
+dd config use prod          # default profile when --profile isn't given
+dd --profile staging products list
+```
 
-| Parameter                           | Re-import findings | Import languages | Remark                                                                                            |
-|-------------------------------------|:------------------:|:----------------:|---------------------------------------------------------------------------------------------------|
-| DD_ENGAGEMENT_DESCRIPTION           | Optional           | -                | Detailed engagement description                                                                   |
-| DD_ENGAGEMENT_VERSION               | Optional           | -                | Version of the product being tested                                                               |
-| DD_ENGAGEMENT_STATUS                | Optional           | -                | `Not Started`, `Blocked`, `Cancelled`, `Completed`, `In Progress` (default), `On Hold`, `Waiting for Resource` |
-| DD_ENGAGEMENT_THREAT_MODEL          | Optional           | -                | `true`/`false` - Include threat modeling activities                                              |
-| DD_ENGAGEMENT_API_TEST              | Optional           | -                | `true`/`false` - Include API testing                                                             |
-| DD_ENGAGEMENT_PEN_TEST              | Optional           | -                | `true`/`false` - Include penetration testing                                                     |
-| DD_ENGAGEMENT_TAGS                  | Optional           | -                | Comma-separated engagement tags                                                                   |
+### Output formats
 
-### ⚙️ Enhanced Finding Controls (NEW!)
+Every read command supports `--output table|json|yaml` (default: `table`). YAML and JSON are stable and pipe-friendly:
 
-| Parameter                               | Re-import findings | Import languages | Remark                                                                                        |
-|-----------------------------------------|:------------------:|:----------------:|-----------------------------------------------------------------------------------------------|
-| DD_APPLY_TAGS_TO_FINDINGS               | Optional           | -                | `true`/`false` - Apply tags to imported findings                                             |
-| DD_APPLY_TAGS_TO_ENDPOINTS              | Optional           | -                | `true`/`false` - Apply tags to endpoints                                                     |
-| DD_CREATE_FINDING_GROUPS_FOR_ALL_FINDINGS | Optional        | -                | `true` (default)/`false` - Create finding groups even for single findings                    |
-| DD_FINDING_TAGS                         | Optional           | -                | Comma-separated tags to apply to findings, e.g., `automated,security,scan`                  |
+```bash
+dd findings list --severity High --output json | jq '.[] | {id, title, severity}'
+```
 
-### Usage Examples
+## Importing scanner findings
 
-#### 🚀 NEW: Auto-Create Workflow (Recommended)
+The new ergonomic form:
 
-The enhanced auto-create workflow simplifies integration by handling all resource creation in a single API call:
+```bash
+dd import findings \
+  --file trivy.json \
+  --scanner "Trivy Scan" \
+  --product-type "Web Apps" \
+  --product "Payments" \
+  --engagement "Q4 Release" \
+  --test-name "Trivy" \
+  [--auto-create | --traditional] \
+  [--minimum-severity Medium] \
+  [--push-to-jira] [--close-old-findings] \
+  [--dry-run] [--yes] [--output table|json|yaml]
+```
+
+Two modes:
+
+- **`--auto-create`** (recommended) — single API call. DefectDojo creates the product, engagement, and test as needed.
+- **`--traditional`** — find-or-create each resource explicitly, then upload. Useful when DefectDojo's auto-create logic disagrees with what you want.
+
+Either mode reads the same `DD_*` env vars the legacy tool used; CLI flags override env vars.
+
+### From CI/CD
 
 ```yaml
-# Enhanced GitLab CI with Auto-Create
-variables:
-  DD_AUTO_CREATE_CONTEXT: "true"  # 🎯 Enable magic auto-creation!
-  DD_PRODUCT_TYPE_NAME: "Web Applications"
-  DD_PRODUCT_NAME: "E-Commerce Platform"
-  DD_PRODUCT_DESCRIPTION: "Customer-facing e-commerce application"
-  DD_PRODUCT_BUSINESS_CRITICALITY: "high"
-  DD_PRODUCT_PLATFORM: "web"
-  DD_PRODUCT_TAGS: "security,webapp,critical"
-  DD_ENGAGEMENT_NAME: "Release 2.1 Security Testing"
-  DD_ENGAGEMENT_DESCRIPTION: "Comprehensive security testing for major release"
-  DD_APPLY_TAGS_TO_FINDINGS: "true"
-  DD_FINDING_TAGS: "automated,trivy,container"
+# GitHub Actions
+- name: Trivy
+  run: trivy fs --format json -o trivy.json .
 
-upload_security_scan:
-  stage: upload
-  image: osamamahmood/dd-import:latest
-  variables:
-    DD_TEST_NAME: "Container Security Scan"
-    DD_TEST_TYPE_NAME: "Trivy Scan"
-    DD_FILE_NAME: "trivy.json"
-  script:
-    - dd-reimport-findings.sh  # ✨ Single command, everything auto-created!
+- name: Upload to DefectDojo
+  env:
+    DD_URL: ${{ secrets.DD_URL }}
+    DD_API_KEY: ${{ secrets.DD_API_KEY }}
+  run: |
+    pip install dd-cli
+    dd import findings \
+      --file trivy.json \
+      --scanner "Trivy Scan" \
+      --product-type "Web Apps" \
+      --product "${{ github.repository }}" \
+      --engagement "${{ github.ref_name }}" \
+      --test-name "Trivy" \
+      --auto-create \
+      --yes
 ```
 
-#### 📋 Traditional Workflow (Still Supported)
-
-This snippet from a [GitLab CI pipeline](.gitlab-ci.yml) serves as an example how `dd-import` can be integrated using the traditional multi-step approach:
-
 ```yaml
-variables:
-  DD_PRODUCT_TYPE_NAME: "Showcase"
-  DD_PRODUCT_NAME: "DefectDojo Importer"
-  DD_ENGAGEMENT_NAME: "GitLab"
-
-...
-
-trivy:
-  stage: test
-  tags:
-    - build
+# GitLab CI
+upload_findings:
+  image: dd-cli:latest
   variables:
-    GIT_STRATEGY: none
-  before_script:
-    - export TRIVY_VERSION=$(wget -qO - "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-    - echo $TRIVY_VERSION
-    - wget --no-verbose https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -O - | tar -zxvf -
-  allow_failure: true
-  script:
-    - ./trivy --exit-code 0 --no-progress -f json -o trivy.json osamamahmood/dd-import:latest
-  artifacts:
-    paths:
-    - trivy.json
-    when: always
-    expire_in: 1 day
-
-cloc:
-  stage: test
-  image: node:16
-  tags:
-    - build
-  before_script:
-    - npm install -g cloc
-  script:
-    - cloc src --json -out cloc.json
-  artifacts:
-    paths:
-    - cloc.json
-    when: always
-    expire_in: 1 day
-
-upload_trivy:
-  stage: upload
-  image: osamamahmood/dd-import:latest
-  needs:
-    - job: trivy
-      artifacts: true  
-  variables:
-    GIT_STRATEGY: none
+    DD_PRODUCT_TYPE_NAME: "Web Apps"
+    DD_PRODUCT_NAME: "$CI_PROJECT_NAME"
+    DD_ENGAGEMENT_NAME: "$CI_COMMIT_REF_SLUG"
     DD_TEST_NAME: "Trivy"
     DD_TEST_TYPE_NAME: "Trivy Scan"
     DD_FILE_NAME: "trivy.json"
+    DD_AUTO_CREATE_CONTEXT: "true"
   script:
-    - dd-reimport-findings.sh
-
-upload-cloc:
-  image: osamamahmood/dd-import:latest
-  needs:
-    - job: cloc
-      artifacts: true  
-  stage: upload
-  tags:
-    - build
-  variables:
-    DD_FILE_NAME: "cloc.json"
-  script:
-    - dd-import-languages.sh
+    - dd-reimport-findings    # legacy console script — still works
 ```
 
-- ***variables*** - Definition of some environment variables that will be used for several uploads. `DD_URL` and `DD_API_KEY` are not defined here because they are protected variables for the GitLab project.
-- ***trivy*** - Example for a vulnerability scan with [trivy](https://github.com/aquasecurity/trivy). Output will be stored in JSON format (`trivy.json`).
-- ***cloc*** - Example how to calculate the lines of code with [cloc](https://github.com/AlDanial/cloc). Output will be stored in JSON format (`cloc.json`).
-- ***upload_trivy*** - This step will be executed after the `trivy` step, gets its output file and sets some variables specific for this step. Then the script to import the findings from this scan is executed.
-- ***upload_cloc*** - This step will be executed after the `cloc` step, gets its output file and sets some variables specific for this step. Then the script to import the language data is executed.
+### Importing language statistics
 
-Another example, showing how to use `dd-import` within a GitHub Action, can be found in [dd-import_example.yml](.github/workflows/dd-import_example.yml).
+[`cloc`](https://github.com/AlDanial/cloc) JSON output for a product:
 
-## 🚀 What's New in This Version
+```bash
+cloc src --json --out cloc.json
+dd import languages --file cloc.json --product-type "Web Apps" --product "Payments"
+```
 
-This enhanced version of `dd-import` introduces powerful new capabilities while maintaining 100% backward compatibility:
+## Migrating from `dd-import`
 
-### ✨ Major Enhancements
+`dd-cli` is a drop-in replacement. **Existing pipelines work unchanged** — install `dd-cli`, the legacy console scripts and all `DD_*` env vars stay valid:
 
-- **🎯 Auto-Create Workflow**: Single API call creates all resources automatically (`DD_AUTO_CREATE_CONTEXT=true`)
-- **📊 Rich Metadata**: Add business context with criticality, platform, lifecycle, and comprehensive tagging
-- **🔄 Smart Workflow Selection**: Automatically chooses optimal workflow based on configuration
-- **⚡ Retry Logic**: Exponential backoff for transient failures ensures reliable imports
-- **✅ Enhanced Validation**: Comprehensive validation with helpful error messages
-- **🏷️ Advanced Tagging**: Tag products, engagements, tests, and findings for better organization
-- **🎛️ Finding Controls**: Fine-grained control over finding grouping and tag application
+| Legacy | Replacement | Status |
+|---|---|---|
+| `dd-reimport-findings` | `dd-reimport-findings` (shim) **or** `dd import findings` (new) | both work; `DD_*` env vars unchanged |
+| `dd-import-languages` | `dd-import-languages` (shim) **or** `dd import languages` (new) | both work; `DD_*` env vars unchanged |
+| `pip install dd-import` | `pip install dd-cli` | new package name |
+| `osamamahmood/dd-import:latest` (Docker) | `ghcr.io/osamamahmood/dd-cli:latest` | swap image, no other changes |
 
-### 🔧 Technical Improvements
+Recommended migration path:
 
-- **25+ New Environment Variables**: Extensive configuration options for all DefectDojo features
-- **Robust Error Handling**: Better error messages and retry mechanisms
-- **Input Validation**: Validates enum values and required fields before API calls
-- **Response Validation**: Ensures API responses contain expected data
-- **Performance Optimized**: Auto-create reduces API calls from 5+ to 1
+1. **Today:** swap the install command (`pip install dd-cli`) or the Docker image. Pipelines keep working.
+2. **When convenient:** migrate to the new ergonomic commands (`dd import findings --file …`) for `--dry-run`, typed exit codes, profile support.
 
-### 📈 Migration Benefits
+The new and legacy entry points have one deliberate difference:
 
-**Before (Traditional)**:
-- Multiple API calls required (5+ calls)
-- Manual resource management
-- Basic metadata only
-- No retry logic
-- Generic error messages
+- `dd-reimport-findings` exits **`1` on any failure** (legacy contract — pipelines that grep `$?` keep working)
+- `dd import findings` exits with **typed codes**: 3 (auth), 5 (not found), 6 (validation), 7 (API), 8 (network), 9 (config). Useful for branching CI logic.
 
-**After (Enhanced)**:
-- Optional single API call workflow
-- Automatic resource creation
-- Rich business metadata
-- Robust retry mechanisms  
-- Comprehensive validation and helpful error messages
-- **100% backward compatible** - existing configs work unchanged!
+A full DD_* env-var reference lives in [`docs/configuration.md`](docs/configuration.md) (in M5b3) and is pinned by a 9-test `@pytest.mark.compat` suite in [`tests/compat/`](tests/compat/).
 
-## Developer guide
+## Documentation
 
-### Testing
+- [`PLAN.md`](PLAN.md) — architecture and roadmap
+- [`RELEASING.md`](RELEASING.md) — how releases are cut and published
+- `docs/` — full user guide (in M5b3)
 
-`./bin/runUnitTests.sh` - Runs the unit tests and reports the test coverage.
+## Development
 
-`./bin/runDockerUnitTests.sh` - First creates the docker image and then starts a docker container in which the unit tests are executed.
+```bash
+git clone https://github.com/OsamaMahmood/dd-cli.git
+cd dd-cli
+pip install -e ".[dev,test]"
+make test           # 257 unit tests + 12 snapshots
+make lint           # ruff
+make typecheck      # mypy --strict
+make smoke          # 24 integration tests against a live DD (env vars required)
+```
 
-## Acknowledgments
+The typed API client in `src/dd_cli/_client/` is generated from [`dd-api.json`](dd-api.json) (DefectDojo's OpenAPI spec). Regenerate after a DefectDojo upgrade:
 
-This project builds upon the excellent work of the original `dd-import` tool created by **Stefan Fleckenstein** at **MaibornWolff GmbH**. The original project can be found at [https://github.com/MaibornWolff/dd-import](https://github.com/MaibornWolff/dd-import).
-
-Special thanks to Stefan and the MaibornWolff team for creating this valuable DefectDojo integration tool and making it available to the community. This enhanced version extends their foundation with additional features while maintaining full backward compatibility.
+```bash
+make install-all    # adds openapi-python-client
+make generate-client
+# review the diff before committing
+```
 
 ## License
 
-Licensed under the [3-Clause BSD License](LICENSE.txt)
+[3-Clause BSD](LICENSE.txt) — same as the upstream `dd-import` project.
+
+## Acknowledgments
+
+dd-cli builds on [`dd-import`](https://github.com/MaibornWolff/dd-import) by **Stefan Fleckenstein** at **MaibornWolff GmbH**, now archived. The original tool's `DD_*` env-var contract is preserved exactly so existing CI pipelines migrate without changes.
