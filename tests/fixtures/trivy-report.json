@@ -1,0 +1,199 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.69.3"
+  },
+  "ReportID": "019e0153-f895-706d-bf4d-6be8122683f6",
+  "CreatedAt": "2026-05-07T12:25:40.885029+05:00",
+  "ArtifactID": "sha256:84af431129f38cb16bbb2475d6aa5f2ca5eabec526e25fe341445e1fb45c50fb",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "git@github.com:OsamaMahmood/dd-cli.git",
+    "Branch": "feat/m4a-import-workflows",
+    "Commit": "c957e965a62a65d781ee590f6133d998153a8901",
+    "CommitMsg": "Merge pull request #9 from OsamaMahmood/feat/release-workflow\n\nfeat(release): hatch-vcs versioning + tag-driven GitHub Release workflow",
+    "Author": "Osama Mahmood \u003cosama.mahmood40@gmail.com\u003e",
+    "Committer": "GitHub \u003cnoreply@github.com\u003e"
+  },
+  "Results": [
+    {
+      "Target": "requirements.txt",
+      "Class": "lang-pkgs",
+      "Type": "pip",
+      "Packages": [
+        {
+          "Name": "coverage",
+          "Identifier": {
+            "PURL": "pkg:pypi/coverage@7.6.9",
+            "UID": "5aaca6456f961dbb"
+          },
+          "Version": "7.6.9",
+          "Locations": [
+            {
+              "StartLine": 2,
+              "EndLine": 2
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "requests",
+          "Identifier": {
+            "PURL": "pkg:pypi/requests@2.32.3",
+            "UID": "b267c6127a7b4252"
+          },
+          "Version": "2.32.3",
+          "Locations": [
+            {
+              "StartLine": 1,
+              "EndLine": 1
+            }
+          ],
+          "AnalyzedBy": "pip"
+        }
+      ],
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-47081",
+          "VendorIDs": [
+            "GHSA-9hjg-9r4m-mvj7"
+          ],
+          "PkgName": "requests",
+          "PkgIdentifier": {
+            "PURL": "pkg:pypi/requests@2.32.3",
+            "UID": "b267c6127a7b4252"
+          },
+          "InstalledVersion": "2.32.3",
+          "FixedVersion": "2.32.4",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-47081",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory pip",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+          },
+          "Fingerprint": "sha256:b5d2b4a6ded04389bfa90b5d9df06e16dd19447d7290acef60be902c0b596c23",
+          "Title": "requests: Requests vulnerable to .netrc credentials leak via malicious URLs",
+          "Description": "Requests is a HTTP library. Due to a URL parsing issue, Requests releases prior to 2.32.4 may leak .netrc credentials to third parties for specific maliciously-crafted URLs. Users should upgrade to version 2.32.4 to receive a fix. For older versions of Requests, use of the .netrc file can be disabled with `trust_env=False` on one's Requests Session.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-522"
+          ],
+          "VendorSeverity": {
+            "alma": 2,
+            "amazon": 2,
+            "azure": 2,
+            "cbl-mariner": 2,
+            "ghsa": 2,
+            "oracle-oval": 2,
+            "photon": 2,
+            "redhat": 2,
+            "rocky": 2,
+            "ubuntu": 2
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.3
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
+              "V3Score": 5.3
+            }
+          },
+          "References": [
+            "http://seclists.org/fulldisclosure/2025/Jun/2",
+            "http://www.openwall.com/lists/oss-security/2025/06/03/11",
+            "http://www.openwall.com/lists/oss-security/2025/06/03/9",
+            "http://www.openwall.com/lists/oss-security/2025/06/04/1",
+            "http://www.openwall.com/lists/oss-security/2025/06/04/6",
+            "https://access.redhat.com/errata/RHSA-2025:12519",
+            "https://access.redhat.com/security/cve/CVE-2024-47081",
+            "https://bugzilla.redhat.com/2371272",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2371272",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-47081",
+            "https://errata.almalinux.org/9/ALSA-2025-12519.html",
+            "https://errata.rockylinux.org/RLSA-2025:13604",
+            "https://github.com/psf/requests",
+            "https://github.com/psf/requests/commit/96ba401c1296ab1dda74a2365ef36d88f7d144ef",
+            "https://github.com/psf/requests/pull/6965",
+            "https://github.com/psf/requests/security/advisories/GHSA-9hjg-9r4m-mvj7",
+            "https://linux.oracle.com/cve/CVE-2024-47081.html",
+            "https://linux.oracle.com/errata/ELSA-2025-14999.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2024-47081",
+            "https://requests.readthedocs.io/en/latest/api/#requests.Session.trust_env",
+            "https://seclists.org/fulldisclosure/2025/Jun/2",
+            "https://ubuntu.com/security/notices/USN-7568-1",
+            "https://ubuntu.com/security/notices/USN-7762-1",
+            "https://www.cve.org/CVERecord?id=CVE-2024-47081",
+            "https://www.openwall.com/lists/oss-security/2025/06/03/9"
+          ],
+          "PublishedDate": "2025-06-09T18:15:24.983Z",
+          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-25645",
+          "VendorIDs": [
+            "GHSA-gc5v-m9x4-r6x2"
+          ],
+          "PkgName": "requests",
+          "PkgIdentifier": {
+            "PURL": "pkg:pypi/requests@2.32.3",
+            "UID": "b267c6127a7b4252"
+          },
+          "InstalledVersion": "2.32.3",
+          "FixedVersion": "2.33.0",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-25645",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory pip",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+          },
+          "Fingerprint": "sha256:73212bd59d5985a8c56baa000dd9b13b3dfa82f10461baa8ceb8253ea8f2e918",
+          "Title": "requests: Requests: Security bypass due to predictable temporary file creation",
+          "Description": "Requests is a HTTP library. Prior to version 2.33.0, the `requests.utils.extract_zipped_paths()` utility function uses a predictable filename when extracting files from zip archives into the system temporary directory. If the target file already exists, it is reused without validation. A local attacker with write access to the temp directory could pre-create a malicious file that would be loaded in place of the legitimate one. Standard usage of the Requests library is not affected by this vulnerability. Only applications that call `extract_zipped_paths()` directly are impacted. Starting in version 2.33.0, the library extracts files to a non-deterministic location. If developers are unable to upgrade, they can set `TMPDIR` in their environment to a directory with restricted write access.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-377"
+          ],
+          "VendorSeverity": {
+            "azure": 2,
+            "ghsa": 2,
+            "nvd": 2,
+            "photon": 2,
+            "redhat": 2
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:N/I:H/A:N",
+              "V3Score": 4.4
+            },
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N",
+              "V3Score": 5.5
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N",
+              "V3Score": 4.7
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-25645",
+            "https://github.com/psf/requests",
+            "https://github.com/psf/requests/commit/66d21cb07bd6255b1280291c4fafb71803cdb3b7",
+            "https://github.com/psf/requests/releases/tag/v2.33.0",
+            "https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-25645",
+            "https://www.cve.org/CVERecord?id=CVE-2026-25645"
+          ],
+          "PublishedDate": "2026-03-25T17:16:52.97Z",
+          "LastModifiedDate": "2026-03-30T14:23:16.127Z"
+        }
+      ]
+    }
+  ]
+}

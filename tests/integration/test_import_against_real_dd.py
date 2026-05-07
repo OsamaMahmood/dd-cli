@@ -218,3 +218,114 @@ def test_import_findings_dry_run_real_dd_makes_no_http(
     assert result.exit_code == 0, result.output
     assert "DRY RUN" in result.stdout
     assert "/api/v2/reimport-scan/" in result.stdout
+
+
+# ---------------------------- real Trivy report --------------------------- #
+
+REAL_TRIVY_FIXTURE = Path(__file__).parent.parent / "fixtures" / "trivy-report.json"
+
+
+def _import_real_trivy(
+    runner: CliRunner,
+    *,
+    auto_create: bool,
+    suffix: str,
+) -> tuple[str, int, list[dict[str, object]]]:
+    """Run a real-Trivy import and return (product_name, product_id, findings_list).
+
+    Stronger than just checking exit_code: verifies findings actually
+    landed in DefectDojo by listing them under the new product.
+    """
+    mode_tag = "auto" if auto_create else "trad"
+    product_name = f"dd-cli-it-trivy-{mode_tag}-{suffix}"
+
+    result = runner.invoke(
+        app,
+        [
+            "import",
+            "findings",
+            "--file",
+            str(REAL_TRIVY_FIXTURE),
+            "--scanner",
+            "Trivy Scan",
+            "--product-type",
+            "Research and Development",
+            "--product",
+            product_name,
+            "--engagement",
+            f"dd-cli-it-trivy-{mode_tag}-eng-{suffix}",
+            "--test-name",
+            f"dd-cli-it-trivy-{mode_tag}-test-{suffix}",
+            "--auto-create" if auto_create else "--traditional",
+            "--yes",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Imported 'Trivy Scan' findings" in result.stdout
+
+    # Resolve the just-created product so we can verify findings against it.
+    product_lookup = runner.invoke(
+        app, ["products", "list", "--name", product_name, "--output", "json"]
+    )
+    assert product_lookup.exit_code == 0, product_lookup.output
+    rows = json.loads(product_lookup.stdout)
+    assert len(rows) == 1, f"Expected exactly 1 product named {product_name!r}, got {len(rows)}"
+    product_id = int(rows[0]["id"])
+
+    # Verify findings are actually in DefectDojo (not just a successful empty import).
+    findings_result = runner.invoke(
+        app,
+        ["findings", "list", "--product", str(product_id), "--all", "--output", "json"],
+    )
+    assert findings_result.exit_code == 0, findings_result.output
+    findings = json.loads(findings_result.stdout)
+    return product_name, product_id, findings
+
+
+def test_import_real_trivy_report_against_real_dd(
+    runner: CliRunner,
+    isolated_config: None,
+    cleanup_stack: list[tuple[str, int]],
+) -> None:
+    """End-to-end import of an actual `trivy fs` report (auto-create flow).
+
+    Highest-confidence test: a real scanner output (not a synthetic fixture)
+    flowing through the full pipeline against a real DefectDojo. The fixture
+    at tests/fixtures/trivy-report.json was produced by `trivy fs`, so the
+    schema matches what users actually upload from CI.
+
+    Verifies findings actually landed in DefectDojo (not just a successful
+    empty import) by listing them under the new product.
+    """
+    if not REAL_TRIVY_FIXTURE.exists():
+        pytest.skip(f"Real Trivy fixture not present at {REAL_TRIVY_FIXTURE}")
+
+    _, product_id, findings = _import_real_trivy(
+        runner, auto_create=True, suffix=uuid.uuid4().hex[:6]
+    )
+    cleanup_stack.append(("products", product_id))
+
+    assert len(findings) > 0, (
+        f"Trivy import succeeded but no findings were created in product "
+        f"{product_id}. Check DefectDojo's Trivy parser output."
+    )
+    severities = {f.get("severity") for f in findings}
+    assert severities, f"Findings created without severities: {findings[:3]}"
+
+
+def test_import_real_trivy_report_traditional_against_real_dd(
+    runner: CliRunner,
+    isolated_config: None,
+    cleanup_stack: list[tuple[str, int]],
+) -> None:
+    """Same real Trivy report through the traditional flow (not auto-create)."""
+    if not REAL_TRIVY_FIXTURE.exists():
+        pytest.skip(f"Real Trivy fixture not present at {REAL_TRIVY_FIXTURE}")
+
+    _, product_id, findings = _import_real_trivy(
+        runner, auto_create=False, suffix=uuid.uuid4().hex[:6]
+    )
+    cleanup_stack.append(("products", product_id))
+    assert len(findings) > 0, (
+        f"Trivy import succeeded but no findings were created in product {product_id}."
+    )
