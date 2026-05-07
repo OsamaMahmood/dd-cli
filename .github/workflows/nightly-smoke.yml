@@ -1,0 +1,163 @@
+name: Nightly smoke
+
+# Stands up a fresh DefectDojo via docker compose, runs the @pytest.mark.integration
+# suite against it, and opens an issue on failure. Catches breaking API changes in
+# DefectDojo upstream before they reach our users.
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 07:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    name: Integration tests vs latest DefectDojo
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dd-cli
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Clone DefectDojo (master)
+        run: |
+          git clone --depth 1 --branch master https://github.com/DefectDojo/django-DefectDojo /tmp/dd
+
+      - name: Bring DefectDojo up (release image)
+        working-directory: /tmp/dd
+        run: |
+          ./dc-up.sh release
+          docker compose ps
+
+      - name: Wait for DefectDojo API to respond
+        run: |
+          for i in $(seq 1 90); do
+            if curl -sfo /dev/null http://localhost:8080/api/v2/users/; then
+              echo "DefectDojo /api/v2/ is live (after ${i}0s)"
+              exit 0
+            fi
+            echo "still waiting for /api/v2/... ($i/90)"
+            sleep 10
+          done
+          echo "DefectDojo never came up" >&2
+          exit 1
+
+      - name: Wait for initializer to finish and capture admin password
+        id: creds
+        working-directory: /tmp/dd
+        run: |
+          for i in $(seq 1 60); do
+            if docker compose logs initializer 2>&1 | grep -q "Admin password:"; then
+              break
+            fi
+            echo "waiting for initializer... ($i/60)"
+            sleep 5
+          done
+          ADMIN_PASS=$(docker compose logs initializer 2>&1 \
+            | grep "Admin password:" \
+            | tail -1 \
+            | sed -E 's/.*Admin password:[[:space:]]*//' \
+            | tr -d '[:space:]')
+          if [ -z "$ADMIN_PASS" ]; then
+            echo "Could not extract admin password from initializer logs" >&2
+            docker compose logs initializer | tail -50 >&2
+            exit 1
+          fi
+          echo "::add-mask::$ADMIN_PASS"
+          echo "admin_password=$ADMIN_PASS" >> "$GITHUB_OUTPUT"
+
+      - name: Mint API token
+        id: token
+        run: |
+          TOKEN=$(curl -sf -X POST http://localhost:8080/api/v2/api-token-auth/ \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"admin\",\"password\":\"${{ steps.creds.outputs.admin_password }}\"}" \
+            | python -c "import json,sys; print(json.load(sys.stdin)['token'])")
+          if [ -z "$TOKEN" ]; then
+            echo "Failed to mint API token" >&2
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Run integration suite
+        env:
+          DD_URL: http://localhost:8080
+          DD_API_KEY: ${{ steps.token.outputs.token }}
+        run: make smoke
+
+      - name: Capture DefectDojo logs on failure
+        if: failure()
+        working-directory: /tmp/dd
+        run: |
+          mkdir -p /tmp/dd-logs
+          docker compose logs --no-color > /tmp/dd-logs/all.log 2>&1 || true
+          docker compose ps > /tmp/dd-logs/ps.txt 2>&1 || true
+
+      - name: Upload DefectDojo logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: defectdojo-logs
+          path: /tmp/dd-logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Tear DefectDojo down
+        if: always()
+        working-directory: /tmp/dd
+        run: ./dc-down.sh || docker compose down -v --remove-orphans || true
+
+      - name: Open issue on failure
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            // Dedupe: don't pile up issues if upstream has been broken for days.
+            const existing = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: "open",
+              labels: "nightly-smoke",
+            });
+            if (existing.data.length > 0) {
+              core.info(`Existing nightly-smoke issue (#${existing.data[0].number}) is open — skipping.`);
+              return;
+            }
+
+            const body = [
+              `Nightly smoke failed against the **latest** DefectDojo (\`master\` branch).`,
+              ``,
+              `**Run:** ${runUrl}`,
+              ``,
+              `Likely causes:`,
+              `- DefectDojo introduced a breaking API change → regenerate \`dd-api.json\` + client.`,
+              `- DefectDojo container init failed → check \`defectdojo-logs\` artifact on the run.`,
+              `- A new endpoint shape needs adapter changes in \`src/dd_cli/cli/\` or workflow code.`,
+              ``,
+              `_Auto-filed by \`nightly-smoke.yml\`. This issue will not be re-filed while it stays open._`,
+            ].join("\n");
+
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `Nightly smoke failed — ${today}`,
+              body,
+              labels: ["nightly-smoke", "bug"],
+            });
