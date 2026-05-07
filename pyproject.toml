@@ -74,9 +74,10 @@ Changelog = "https://github.com/OsamaMahmood/dd-import-v2/blob/main/CHANGELOG.md
 
 [project.scripts]
 dd = "dd_cli.cli.app:main"
-# Backward-compatibility shims for the legacy dd-import package. Wired in M4.
-# dd-reimport-findings = "dd_cli.cli.legacy:dd_reimport_findings_main"
-# dd-import-languages  = "dd_cli.cli.legacy:dd_import_languages_main"
+# Backward-compatibility shims for the legacy dd-import tool. Read DD_*
+# env vars and exit 1 on any failure to match the legacy contract.
+dd-reimport-findings = "dd_cli.cli.legacy:dd_reimport_findings_main"
+dd-import-languages = "dd_cli.cli.legacy:dd_import_languages_main"
 
 [build-system]
 requires = ["hatchling>=1.24", "hatch-vcs>=0.4"]

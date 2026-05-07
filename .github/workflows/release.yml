@@ -26,6 +26,20 @@ jobs:
           # hatch-vcs needs the full tag history to compute the version.
           fetch-depth: 0
 
+      - name: Verify tag points at a commit reachable from main
+        # Catches the "tag pushed from a stale feature branch" footgun that
+        # produced an empty changelog for v0.4.0 — see RELEASING.md. Every
+        # release tag must be a descendant of the merge commit on main.
+        run: |
+          TAG_SHA=$(git rev-parse "$GITHUB_REF")
+          if ! git merge-base --is-ancestor "$TAG_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points at $TAG_SHA, which is not"
+            echo "::error::an ancestor of origin/main. Re-tag from a fully-pulled"
+            echo "::error::main checkout — see RELEASING.md."
+            exit 1
+          fi
+          echo "Tag $GITHUB_REF_NAME → $TAG_SHA is reachable from main."
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -63,14 +77,19 @@ jobs:
           echo "=== SHA256SUMS ==="
           cat SHA256SUMS
 
-      - name: Detect prerelease
-        id: prerelease
+      - name: Pick prerelease + latest flags from tag shape
+        id: release_flags
+        # Tags with a `-` (e.g. v1.0.0-rc.1) are prereleases — never marked
+        # latest. Stable tags (e.g. v0.4.0) get --latest=true explicitly so
+        # GitHub doesn't fall back to the publishedAt-time heuristic that
+        # left v0.2.0 incorrectly tagged as Latest after a backfill.
         run: |
           if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
-            echo "flag=--prerelease" >> "$GITHUB_OUTPUT"
+            echo "flags=--prerelease --latest=false" >> "$GITHUB_OUTPUT"
             echo "Detected prerelease tag: $GITHUB_REF_NAME"
           else
-            echo "flag=" >> "$GITHUB_OUTPUT"
+            echo "flags=--latest=true" >> "$GITHUB_OUTPUT"
+            echo "Stable tag — will mark as Latest: $GITHUB_REF_NAME"
           fi
 
       - name: Create GitHub Release
@@ -80,5 +99,5 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes \
-            ${{ steps.prerelease.outputs.flag }} \
+            ${{ steps.release_flags.outputs.flags }} \
             dist/*.whl dist/*.tar.gz dist/SHA256SUMS
