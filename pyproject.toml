@@ -1,5 +1,5 @@
 [project]
-name = "defectdojo-cli"
+name = "dd-cli"
 dynamic = ["version"]
 description = "Production-grade CLI for managing DefectDojo"
 readme = "README.md"
@@ -67,10 +67,11 @@ client-gen = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/OsamaMahmood/dd-import-v2"
-Repository = "https://github.com/OsamaMahmood/dd-import-v2"
-Issues = "https://github.com/OsamaMahmood/dd-import-v2/issues"
-Changelog = "https://github.com/OsamaMahmood/dd-import-v2/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/OsamaMahmood/dd-cli"
+Repository = "https://github.com/OsamaMahmood/dd-cli"
+Issues = "https://github.com/OsamaMahmood/dd-cli/issues"
+Changelog = "https://github.com/OsamaMahmood/dd-cli/blob/main/CHANGELOG.md"
+Releases = "https://github.com/OsamaMahmood/dd-cli/releases"
 
 [project.scripts]
 dd = "dd_cli.cli.app:main"

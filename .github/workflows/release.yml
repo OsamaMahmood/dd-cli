@@ -101,3 +101,45 @@ jobs:
             --generate-notes \
             ${{ steps.release_flags.outputs.flags }} \
             dist/*.whl dist/*.tar.gz dist/SHA256SUMS
+
+      - name: Upload built artifacts for the publish-pypi job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-pypi:
+    name: Publish to PyPI via OIDC trusted publisher
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    # The `pypi` environment must exist in repo Settings → Environments and
+    # be linked to the dd-cli project on PyPI as a trusted publisher.
+    # See RELEASING.md for the one-time PyPI setup.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/dd-cli/
+    permissions:
+      id-token: write   # required for OIDC token minting
+    steps:
+      - name: Download built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Drop non-package files before twine upload
+        # SHA256SUMS sits in dist/ alongside the wheel/sdist for the GH
+        # Release; twine doesn't know what to do with it.
+        run: |
+          rm -f dist/SHA256SUMS
+          ls -la dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          # The trusted publisher expects no explicit token — the action
+          # uses the OIDC id-token from the runner.
+          skip-existing: false   # fail loudly if version already exists

@@ -70,11 +70,39 @@ gh release delete v0.3.0 --cleanup-tag --yes
 
 `--cleanup-tag` also removes the tag, freeing the version number for reuse.
 
-## What the workflow does NOT do (yet)
+## PyPI publish
 
-These land in M5 per [`PLAN.md`](PLAN.md) §8:
+Tag pushes also publish the wheel + sdist to PyPI as
+[`dd-cli`](https://pypi.org/project/dd-cli/) via the
+[`publish-pypi`](.github/workflows/release.yml) job. No long-lived API
+token is stored in the repo — the job uses GitHub's OIDC trusted-publisher
+mechanism: PyPI is configured to trust this specific
+`OsamaMahmood/dd-cli` workflow + `pypi` GitHub Actions environment.
 
-- **PyPI publish** via OIDC trusted publisher
+### One-time setup
+
+These are already done for the `dd-cli` project; documented here so the
+process is reproducible if the trust relationship needs to be rebuilt.
+
+1. Create the `pypi` environment in this repo:
+   **Settings → Environments → New environment** → name `pypi`. Optional
+   but recommended: under "Deployment branches", restrict to "Selected
+   branches and tags" → add a tag rule `v*`.
+2. On PyPI, sign in and visit
+   **[Account settings → Publishing](https://pypi.org/manage/account/publishing/)** →
+   "Add a new pending publisher" with:
+   - PyPI project name: `dd-cli`
+   - Owner: `OsamaMahmood`
+   - Repository name: `dd-cli`
+   - Workflow name: `release.yml`
+   - Environment name: `pypi`
+3. The first successful tag-driven workflow run creates the `dd-cli`
+   project on PyPI (the publisher transitions from "pending" to active).
+
+### What the workflow does NOT do yet
+
+These land in the rest of M5:
+
 - **Docker images** to `ghcr.io` and Docker Hub
 - **Homebrew formula bump** PR to `OsamaMahmood/homebrew-tap`
 - **SBOM** generation, **cosign** signing

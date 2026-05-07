@@ -9,7 +9,7 @@
 
 `dd-import` was created by Stefan Fleckenstein at MaibornWolff GmbH as a small utility to push scanner findings and `cloc` language data into DefectDojo from CI/CD pipelines. The upstream project is now **archived** with no active development.
 
-This fork (`dd-cli`, [github.com/OsamaMahmood/dd-import-v2](https://github.com/OsamaMahmood/dd-import-v2)) takes over and **expands the scope**: from "an importer driven by `DD_*` environment variables" to "a full DefectDojo management CLI" — covering products, engagements, tests, findings, users, JIRA configuration, risk acceptances, and the rest of the API surface — while keeping every existing CI integration working unchanged.
+This fork (`dd-cli`, [github.com/OsamaMahmood/dd-cli](https://github.com/OsamaMahmood/dd-cli)) takes over and **expands the scope**: from "an importer driven by `DD_*` environment variables" to "a full DefectDojo management CLI" — covering products, engagements, tests, findings, users, JIRA configuration, risk acceptances, and the rest of the API surface — while keeping every existing CI integration working unchanged.
 
 DefectDojo's REST API (v2.54.3) is documented in [`dd-api.json`](./dd-api.json) at the repo root: **226 path templates, ~450 operations across ~80 resources**. Hand-wrapping that surface is not viable; the new architecture generates a typed client from the spec.
 
@@ -44,7 +44,7 @@ These are locked-in defaults — flag any you want changed before scaffolding st
 | D7 | Lint/format | **ruff** | Replaces flake8 + black + isort. One tool. |
 | D8 | Type check | **mypy --strict** | Cheaper than pyright in CI; catches the same bugs for our code. |
 | D9 | Test framework | **pytest** + `pytest-httpx` + `syrupy` (snapshots) + `coverage` | Migrate off `unittest`. |
-| D10 | PyPI name | **`defectdojo-cli`** (binary command: `dd`) | `dd-cli` is taken on PyPI. `defectdojo-cli` is descriptive and discoverable. We continue publishing `dd-import` as a meta-package that depends on `defectdojo-cli` for one release cycle, then deprecate. |
+| D10 | PyPI name | **`dd-cli`** (binary command: `dd`) | Originally locked in as `dd-cli` but that name turned out to be taken on PyPI by an unrelated project (`fopina/defectdojo-api-generated`). `dd-cli` was actually available, matches the binary, and matches the GitHub repo name. We continue publishing `dd-import` as a meta-package that depends on `dd-cli` for one release cycle, then deprecate. |
 | D11 | Repo layout | **src layout** | Standard, prevents shadowing during dev. |
 | D12 | Docs | **mkdocs-material**, command reference auto-generated from Typer via `mkdocs-click` | Single source of truth, deploys to GitHub Pages. |
 | D13 | Versioning | **SemVer**. v0.x during scaffolding, v1.0 = legacy parity, v2.0 = full mgmt CLI | Predictable for downstream pipelines. |
@@ -202,7 +202,7 @@ Three guarantees, in priority order:
 
 1. **`DD_*` env-var contract is sacred.** Every variable currently read by `dd_import/environment.py` keeps the same name and semantics. Pydantic-settings declares each as an alias on the new config model. Behavior on a clean checkout matches byte-for-byte for the supported scanners.
 2. **Console scripts `dd-reimport-findings` and `dd-import-languages` keep working.** They become thin shims that load `DD_*` env vars and call the new workflow code. Same stdout, same exit codes, same Docker image entry points (`bin/dd-reimport-findings.sh`, `bin/dd-import-languages.sh`).
-3. **The `dd-import` PyPI package keeps publishing for one minor release after v1.0**, as a meta-package that pins `defectdojo-cli==X.Y.*`. Existing `pip install dd-import` works. Release notes point to the new name.
+3. **The `dd-import` PyPI package keeps publishing for one minor release after v1.0**, as a meta-package that pins `dd-cli==X.Y.*`. Existing `pip install dd-import` works. Release notes point to the new name.
 
 ### Compat tests
 
@@ -310,12 +310,12 @@ Deliverables:
 - Migration guide from `dd-import`.
 - CI recipes (GitHub Actions, GitLab CI, Jenkins).
 - `release.yml`: tag `v*` → PyPI publish (trusted publisher), Docker push (ghcr.io + docker.io), Homebrew formula bump (PR to tap repo).
-- `homebrew-tap` repo created with `defectdojo-cli` formula.
-- `dd-import` shim package published one last time (depends on `defectdojo-cli`).
+- `homebrew-tap` repo created with `dd-cli` formula.
+- `dd-import` shim package published one last time (depends on `dd-cli`).
 - v2.0.0 release.
 
 Acceptance:
-- `pip install defectdojo-cli` and `brew install osamamahmood/tap/defectdojo-cli` both produce a working `dd`.
+- `pip install dd-cli` and `brew install osamamahmood/tap/dd-cli` both produce a working `dd`.
 - Docs site live with command reference.
 
 ### Total: ~6.5 weeks of focused effort.
@@ -366,14 +366,14 @@ Acceptance:
 
 | Channel | Artifact | Audience |
 |---|---|---|
-| PyPI | `defectdojo-cli` | Python users, CI runners |
+| PyPI | `dd-cli` | Python users, CI runners |
 | PyPI | `dd-import` (shim, one release) | Existing users — soft migration |
 | Docker (ghcr.io) | `ghcr.io/osamamahmood/dd-cli:tag` | CI pipelines |
 | Docker Hub | `osamamahmood/dd-cli:tag` | Existing CI pipelines (legacy image name preserved) |
-| Homebrew | `osamamahmood/tap/defectdojo-cli` | macOS/Linux developers |
+| Homebrew | `osamamahmood/tap/dd-cli` | macOS/Linux developers |
 | GitHub Releases | sdist + wheel + checksums + SBOM | Air-gapped installs |
 
-`pipx install defectdojo-cli` is the recommended developer-machine install.
+`pipx install dd-cli` is the recommended developer-machine install.
 
 ## 12. Documentation
 
@@ -399,7 +399,7 @@ Acceptance:
 | Generated client breaks on DD spec change | Medium | High | Pin `dd-api.json` version; regenerate intentionally; integration smoke tests catch regressions. |
 | DefectDojo introduces breaking API changes | Medium | High | Version-pin client; declare supported DD versions in README; nightly smoke against latest stable DD. |
 | Backward-compat regression silently breaks user CI | Low | Critical | Compat test suite gates every PR; snapshot HTTP payloads of legacy flows. |
-| `defectdojo-cli` PyPI name unavailable | Low | Low | Fall back to `ddcli` or `osmc-defectdojo`; verify in M0 before naming. |
+| `dd-cli` PyPI name unavailable | Low | Low | Fall back to `ddcli` or `osmc-defectdojo`; verify in M0 before naming. |
 | Solo-maintainer burnout | High | Critical | Phased delivery; automate everything; dependabot; trusted publisher; no manual release steps. |
 | Generated client is huge / slow imports | Low | Medium | Lazy-import per command; benchmark `dd --version` startup in CI. |
 
@@ -419,7 +419,7 @@ Tracked as `future/*.md` once we get there:
 
 v2.0.0 ships when **all** are true:
 
-- [ ] `pip install defectdojo-cli` produces a working `dd` on Python 3.11/3.12/3.13.
+- [ ] `pip install dd-cli` produces a working `dd` on Python 3.11/3.12/3.13.
 - [ ] All existing `DD_*`-driven CI pipelines pass with the new Docker image, no config change.
 - [ ] `dd` covers list/get/create/update/delete for the 12 resources in §8 M2/M3.
 - [ ] Coverage ≥85%, mypy --strict clean, ruff clean.
@@ -458,7 +458,7 @@ After this PR is merged: `pip install -e .` then `dd --help` works.
 
 ```toml
 [project]
-name = "defectdojo-cli"
+name = "dd-cli"
 version = "0.0.1"
 description = "Production-grade CLI for DefectDojo"
 readme = "README.md"

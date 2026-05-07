@@ -41,7 +41,7 @@ before merging.
 The plan ([`PLAN.md`](../../../PLAN.md) D17) keeps the generated client
 **vendored** rather than built at install time. Trade-offs:
 
-- ✅ `pip install defectdojo-cli` works offline (no network, no codegen tools).
+- ✅ `pip install dd-cli` works offline (no network, no codegen tools).
 - ✅ Contributors can grep the client directly.
 - ✅ CI is faster — no regen step on every build.
 - ❌ Larger PRs when we regenerate. Mitigated by isolating regen into its own PR.
