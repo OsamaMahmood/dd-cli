@@ -353,7 +353,7 @@ Acceptance:
 - `mkdocs build --strict` → deploy via `actions/deploy-pages@v4` to GitHub Pages.
 
 ### `nightly-smoke.yml` (cron) ✅
-- Clones DefectDojo `master` and runs `./dc-up.sh release`.
+- Clones DefectDojo `master`, runs `docker/setEnv.sh release && docker compose up -d`.
 - Polls `/api/v2/users/`, mints an API token via `/api/v2/api-token-auth/` using the admin password parsed from the initializer logs.
 - Runs `make smoke` (24 integration tests).
 - On scheduled-run failure, opens a deduped GitHub issue labelled `nightly-smoke`.

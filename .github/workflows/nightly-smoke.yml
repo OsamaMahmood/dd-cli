@@ -38,7 +38,8 @@ jobs:
       - name: Bring DefectDojo up (release image)
         working-directory: /tmp/dd
         run: |
-          ./dc-up.sh release
+          docker/setEnv.sh release
+          docker compose up -d
           docker compose ps
 
       - name: Wait for DefectDojo API to respond
@@ -118,7 +119,7 @@ jobs:
       - name: Tear DefectDojo down
         if: always()
         working-directory: /tmp/dd
-        run: ./dc-down.sh || docker compose down -v --remove-orphans || true
+        run: docker compose down -v --remove-orphans || true
 
       - name: Open issue on failure
         if: failure() && github.event_name == 'schedule'
