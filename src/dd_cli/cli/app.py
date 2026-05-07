@@ -14,6 +14,7 @@ from dd_cli.cli.endpoints import endpoints_app
 from dd_cli.cli.engagements import engagements_app
 from dd_cli.cli.finding_templates import finding_templates_app
 from dd_cli.cli.findings import findings_app
+from dd_cli.cli.import_cmd import import_app
 from dd_cli.cli.jira_instances import jira_instances_app
 from dd_cli.cli.metadata import metadata_app
 from dd_cli.cli.ping import ping
@@ -51,6 +52,7 @@ app.add_typer(risk_acceptances_app)
 app.add_typer(metadata_app)
 app.add_typer(endpoints_app)
 app.add_typer(finding_templates_app)
+app.add_typer(import_app)
 app.command("configure", help="Interactively create or update a profile.")(configure)
 app.command("ping", help="Verify connectivity and authentication against DefectDojo.")(ping)
 
