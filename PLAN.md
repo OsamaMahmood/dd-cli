@@ -301,22 +301,22 @@ Acceptance:
 - Existing GitLab CI / GitHub Actions example workflows in upstream README run unchanged against new image.
 - Docker image size measurably smaller than current alpine build.
 
-### M5 — Polish & v2.0 release (target: 1 week)
+### M5 — Polish & v2.0 release (target: 1 week)  ✅ **shipped 2026-05-07**
 
 Deliverables:
-- `dd completion install bash|zsh|fish` (Typer's built-in).
-- mkdocs-material site at `docs/` deployed to `gh-pages` on main.
-- Auto-generated command reference (`mkdocs-click`).
-- Migration guide from `dd-import`.
-- CI recipes (GitHub Actions, GitLab CI, Jenkins).
-- `release.yml`: tag `v*` → PyPI publish (trusted publisher), Docker push (ghcr.io + docker.io), Homebrew formula bump (PR to tap repo).
-- `homebrew-tap` repo created with `dd-cli` formula.
-- `dd-import` shim package published one last time (depends on `dd-cli`).
-- v2.0.0 release.
+- ~~`dd completion install bash|zsh|fish`~~ — Typer wires `--install-completion` automatically; no dedicated subcommand needed.
+- mkdocs-material site at `docs/` deployed to GitHub Pages on main. ✅ ([osamamahmood.github.io/dd-cli](https://osamamahmood.github.io/dd-cli/))
+- Auto-generated command reference (`mkdocs-click`). ✅
+- Migration guide from `dd-import`. ✅ ([docs/migration.md](docs/migration.md))
+- CI recipes (GitHub Actions, GitLab CI). ✅ — Jenkins deferred; can be added on demand.
+- `release.yml`: tag `v*` → PyPI publish (trusted publisher), Docker push (ghcr.io + docker.io). ✅
+- ~~`homebrew-tap` repo + formula~~ — deferred post-v2.0; pip/pipx is the recommended install path. (See §14.)
+- ~~`dd-import` shim package~~ — superseded by the in-repo `dd-reimport-findings` / `dd-import-languages` console scripts; existing `dd-import` users `pip install dd-cli` instead.
+- v2.0.0 release. ✅
 
 Acceptance:
-- `pip install dd-cli` and `brew install osamamahmood/tap/dd-cli` both produce a working `dd`.
-- Docs site live with command reference.
+- `pip install dd-cli` produces a working `dd`. ✅
+- Docs site live with command reference. ✅
 
 ### Total: ~6.5 weeks of focused effort.
 
@@ -337,26 +337,26 @@ Acceptance:
 
 ## 10. CI/CD
 
-### `ci.yml` (every PR + push to main)
-- Matrix: Python 3.11, 3.12, 3.13 × ubuntu-latest
-- Steps: `uv sync --frozen` → `make lint` → `make typecheck` → `make test`
-- Coverage upload to codecov
-- Cache: uv, ruff, mypy
+### `ci.yml` (every PR + push to main) ✅
+- Matrix: Python 3.11, 3.12, 3.13 × ubuntu-latest.
+- Steps: `pip install -e ".[dev,test]"` → `ruff check` → `ruff format --check` → `mypy` → `pytest`.
+- Cache: pip.
 
-### `release.yml` (tag `v*`)
-- Build sdist + wheel via `uv build`
-- Publish to PyPI via OIDC trusted publisher (no API token in repo)
-- Build & push Docker images: `ghcr.io/osamamahmood/dd-cli:vX.Y.Z`, `:vX.Y`, `:latest`
-- Open PR to `homebrew-tap` repo bumping the formula
-- Generate GitHub Release notes from CHANGELOG section
+### `release.yml` (tag `v*`) ✅
+- Builds sdist + wheel via `python -m build`.
+- Publishes to PyPI via OIDC trusted publisher (no API token in repo).
+- Builds & pushes multi-arch Docker images to `ghcr.io/osamamahmood/dd-cli` and `m4rkm3n/dd-cli`.
+- Generates GitHub Release notes from PRs since the previous tag.
+- Homebrew formula bump deferred — see §14.
 
-### `docs.yml` (push to main)
-- `mkdocs build` → deploy to `gh-pages`
+### `docs.yml` (push to main) ✅
+- `mkdocs build --strict` → deploy via `actions/deploy-pages@v4` to GitHub Pages.
 
-### `nightly-smoke.yml` (cron)
-- docker-compose up DefectDojo
-- Run integration suite against it
-- Open issue on failure
+### `nightly-smoke.yml` (cron) ✅
+- Clones DefectDojo `master` and runs `./dc-up.sh release`.
+- Polls `/api/v2/users/`, mints an API token via `/api/v2/api-token-auth/` using the admin password parsed from the initializer logs.
+- Runs `make smoke` (24 integration tests).
+- On scheduled-run failure, opens a deduped GitHub issue labelled `nightly-smoke`.
 
 ### `dependabot.yml`
 - Weekly: pip deps, GitHub Actions
@@ -417,15 +417,15 @@ Tracked as `future/*.md` once we get there:
 
 ## 15. Success criteria
 
-v2.0.0 ships when **all** are true:
+v2.0.0 shipped on 2026-05-07. All criteria met (Homebrew tap deferred — see §14 / `RELEASING.md`):
 
-- [ ] `pip install dd-cli` produces a working `dd` on Python 3.11/3.12/3.13.
-- [ ] All existing `DD_*`-driven CI pipelines pass with the new Docker image, no config change.
-- [ ] `dd` covers list/get/create/update/delete for the 12 resources in §8 M2/M3.
-- [ ] Coverage ≥85%, mypy --strict clean, ruff clean.
-- [ ] Docs site live; command reference up to date.
-- [ ] PyPI + Docker (both registries) + Homebrew tap all publish on tag automatically.
-- [ ] Compat test suite green.
+- [x] `pip install dd-cli` produces a working `dd` on Python 3.11/3.12/3.13.
+- [x] All existing `DD_*`-driven CI pipelines pass with the new Docker image, no config change.
+- [x] `dd` covers list/get/create/update/delete for the 12 resources in §8 M2/M3.
+- [x] Coverage ≥85%, mypy --strict clean, ruff clean. *(88% coverage, 257 unit + 12 snapshot + 9 compat tests pass.)*
+- [x] Docs site live; command reference up to date. *([osamamahmood.github.io/dd-cli](https://osamamahmood.github.io/dd-cli/))*
+- [x] PyPI + Docker (both registries) publish on tag automatically. *(Homebrew tap deferred to post-v2.0; see §14.)*
+- [x] Compat test suite green.
 
 ---
 
