@@ -105,8 +105,8 @@ Tag pushes also build and push a multi-arch (linux/amd64 + linux/arm64)
 container image to two registries via the
 [`publish-docker`](.github/workflows/release.yml) job:
 
-- `ghcr.io/osamamahmood/dd-cli`
-- `osamamahmood/dd-cli` (Docker Hub)
+- `ghcr.io/osamamahmood/dd-cli` (GitHub Container Registry)
+- `m4rkm3n/dd-cli` (Docker Hub — namespace differs from GitHub handle)
 
 Tag aliases follow standard semver convention:
 
