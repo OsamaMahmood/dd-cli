@@ -29,10 +29,10 @@ class Engagement:
     """
     Attributes:
         id (int):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
+        updated (datetime.datetime | None): Time that the object was most recently saved to the database
         target_start (datetime.date):
         target_end (datetime.date):
-        updated (datetime.datetime | None):
-        created (datetime.datetime | None):
         active (bool):
         progress (str):
         tmodel_path (None | str):
@@ -60,6 +60,7 @@ class Engagement:
             * `Completed` - Completed
             * `In Progress` - In Progress
             * `On Hold` - On Hold
+            * `Scheduled` - Scheduled
             * `Waiting for Resource` - Waiting for Resource
         engagement_type (EngagementEngagementTypeType1 | EngagementEngagementTypeType2Type1 |
             EngagementEngagementTypeType3Type1 | None | Unset): * `Interactive` - Interactive
@@ -81,10 +82,10 @@ class Engagement:
     """
 
     id: int
+    created: datetime.datetime | None
+    updated: datetime.datetime | None
     target_start: datetime.date
     target_end: datetime.date
-    updated: datetime.datetime | None
-    created: datetime.datetime | None
     active: bool
     progress: str
     tmodel_path: None | str
@@ -136,9 +137,11 @@ class Engagement:
     def to_dict(self) -> dict[str, Any]:
         id = self.id
 
-        target_start = self.target_start.isoformat()
-
-        target_end = self.target_end.isoformat()
+        created: None | str
+        if isinstance(self.created, datetime.datetime):
+            created = self.created.isoformat()
+        else:
+            created = self.created
 
         updated: None | str
         if isinstance(self.updated, datetime.datetime):
@@ -146,11 +149,9 @@ class Engagement:
         else:
             updated = self.updated
 
-        created: None | str
-        if isinstance(self.created, datetime.datetime):
-            created = self.created.isoformat()
-        else:
-            created = self.created
+        target_start = self.target_start.isoformat()
+
+        target_end = self.target_end.isoformat()
 
         active = self.active
 
@@ -328,10 +329,10 @@ class Engagement:
         field_dict.update(
             {
                 "id": id,
+                "created": created,
+                "updated": updated,
                 "target_start": target_start,
                 "target_end": target_end,
-                "updated": updated,
-                "created": created,
                 "active": active,
                 "progress": progress,
                 "tmodel_path": tmodel_path,
@@ -405,9 +406,20 @@ class Engagement:
         d = dict(src_dict)
         id = d.pop("id")
 
-        target_start = isoparse(d.pop("target_start")).date()
+        def _parse_created(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                created_type_0 = isoparse(data)
 
-        target_end = isoparse(d.pop("target_end")).date()
+                return created_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        created = _parse_created(d.pop("created"))
 
         def _parse_updated(data: object) -> datetime.datetime | None:
             if data is None:
@@ -424,20 +436,9 @@ class Engagement:
 
         updated = _parse_updated(d.pop("updated"))
 
-        def _parse_created(data: object) -> datetime.datetime | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                created_type_0 = isoparse(data)
+        target_start = isoparse(d.pop("target_start")).date()
 
-                return created_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(datetime.datetime | None, data)
-
-        created = _parse_created(d.pop("created"))
+        target_end = isoparse(d.pop("target_end")).date()
 
         active = d.pop("active")
 
@@ -754,10 +755,10 @@ class Engagement:
 
         engagement = cls(
             id=id,
+            created=created,
+            updated=updated,
             target_start=target_start,
             target_end=target_end,
-            updated=updated,
-            created=created,
             active=active,
             progress=progress,
             tmodel_path=tmodel_path,

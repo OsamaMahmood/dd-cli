@@ -38,9 +38,9 @@ class Product:
         findings_count (int):
         findings_list (list[int]):
         product_meta (list[ProductMeta]):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
         name (str):
         description (str):
-        created (datetime.datetime | None):
         prod_type (int):
         members (list[int]):
         authorization_groups (list[int]):
@@ -93,9 +93,9 @@ class Product:
     findings_count: int
     findings_list: list[int]
     product_meta: list[ProductMeta]
+    created: datetime.datetime | None
     name: str
     description: str
-    created: datetime.datetime | None
     prod_type: int
     members: list[int]
     authorization_groups: list[int]
@@ -149,15 +149,15 @@ class Product:
             product_meta_item = product_meta_item_data.to_dict()
             product_meta.append(product_meta_item)
 
-        name = self.name
-
-        description = self.description
-
         created: None | str
         if isinstance(self.created, datetime.datetime):
             created = self.created.isoformat()
         else:
             created = self.created
+
+        name = self.name
+
+        description = self.description
 
         prod_type = self.prod_type
 
@@ -283,9 +283,9 @@ class Product:
                 "findings_count": findings_count,
                 "findings_list": findings_list,
                 "product_meta": product_meta,
+                "created": created,
                 "name": name,
                 "description": description,
-                "created": created,
                 "prod_type": prod_type,
                 "members": members,
                 "authorization_groups": authorization_groups,
@@ -353,10 +353,6 @@ class Product:
 
             product_meta.append(product_meta_item)
 
-        name = d.pop("name")
-
-        description = d.pop("description")
-
         def _parse_created(data: object) -> datetime.datetime | None:
             if data is None:
                 return data
@@ -371,6 +367,10 @@ class Product:
             return cast(datetime.datetime | None, data)
 
         created = _parse_created(d.pop("created"))
+
+        name = d.pop("name")
+
+        description = d.pop("description")
 
         prod_type = d.pop("prod_type")
 
@@ -648,9 +648,9 @@ class Product:
             findings_count=findings_count,
             findings_list=findings_list,
             product_meta=product_meta,
+            created=created,
             name=name,
             description=description,
-            created=created,
             prod_type=prod_type,
             members=members,
             authorization_groups=authorization_groups,

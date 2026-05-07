@@ -82,7 +82,8 @@ def sync_detailed(
     | PatchedCredentialMappingRequest
     | Unset = UNSET,
 ) -> Response[CredentialMapping]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialMappingRequest | Unset):
@@ -118,7 +119,8 @@ def sync(
     | PatchedCredentialMappingRequest
     | Unset = UNSET,
 ) -> CredentialMapping | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialMappingRequest | Unset):
@@ -149,7 +151,8 @@ async def asyncio_detailed(
     | PatchedCredentialMappingRequest
     | Unset = UNSET,
 ) -> Response[CredentialMapping]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialMappingRequest | Unset):
@@ -183,7 +186,8 @@ async def asyncio(
     | PatchedCredentialMappingRequest
     | Unset = UNSET,
 ) -> CredentialMapping | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedCredentialMappingRequest | Unset):

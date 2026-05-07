@@ -16,6 +16,7 @@ class Endpoint:
     """
     Attributes:
         id (int):
+        active_finding_count (int):
         endpoint_params (list[int]):
         findings (list[int]):
         tags (list[str] | Unset):
@@ -33,6 +34,7 @@ class Endpoint:
     """
 
     id: int
+    active_finding_count: int
     endpoint_params: list[int]
     findings: list[int]
     tags: list[str] | Unset = UNSET
@@ -48,6 +50,8 @@ class Endpoint:
 
     def to_dict(self) -> dict[str, Any]:
         id = self.id
+
+        active_finding_count = self.active_finding_count
 
         endpoint_params = self.endpoint_params
 
@@ -110,6 +114,7 @@ class Endpoint:
         field_dict.update(
             {
                 "id": id,
+                "active_finding_count": active_finding_count,
                 "endpoint_params": endpoint_params,
                 "findings": findings,
             }
@@ -139,6 +144,8 @@ class Endpoint:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
         id = d.pop("id")
+
+        active_finding_count = d.pop("active_finding_count")
 
         endpoint_params = cast(list[int], d.pop("endpoint_params"))
 
@@ -220,6 +227,7 @@ class Endpoint:
 
         endpoint = cls(
             id=id,
+            active_finding_count=active_finding_count,
             endpoint_params=endpoint_params,
             findings=findings,
             tags=tags,

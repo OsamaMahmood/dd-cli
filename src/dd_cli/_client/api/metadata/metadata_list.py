@@ -15,6 +15,7 @@ def _get_kwargs(
     finding: int | Unset = UNSET,
     id: int | Unset = UNSET,
     limit: int | Unset = UNSET,
+    location: int | Unset = UNSET,
     name: str | Unset = UNSET,
     name_case_insensitive: str | Unset = UNSET,
     offset: int | Unset = UNSET,
@@ -32,6 +33,8 @@ def _get_kwargs(
     params["id"] = id
 
     params["limit"] = limit
+
+    params["location"] = location
 
     params["name"] = name
 
@@ -88,6 +91,7 @@ def sync_detailed(
     finding: int | Unset = UNSET,
     id: int | Unset = UNSET,
     limit: int | Unset = UNSET,
+    location: int | Unset = UNSET,
     name: str | Unset = UNSET,
     name_case_insensitive: str | Unset = UNSET,
     offset: int | Unset = UNSET,
@@ -101,6 +105,7 @@ def sync_detailed(
         finding (int | Unset):
         id (int | Unset):
         limit (int | Unset):
+        location (int | Unset):
         name (str | Unset):
         name_case_insensitive (str | Unset):
         offset (int | Unset):
@@ -121,6 +126,7 @@ def sync_detailed(
         finding=finding,
         id=id,
         limit=limit,
+        location=location,
         name=name,
         name_case_insensitive=name_case_insensitive,
         offset=offset,
@@ -143,6 +149,7 @@ def sync(
     finding: int | Unset = UNSET,
     id: int | Unset = UNSET,
     limit: int | Unset = UNSET,
+    location: int | Unset = UNSET,
     name: str | Unset = UNSET,
     name_case_insensitive: str | Unset = UNSET,
     offset: int | Unset = UNSET,
@@ -156,6 +163,7 @@ def sync(
         finding (int | Unset):
         id (int | Unset):
         limit (int | Unset):
+        location (int | Unset):
         name (str | Unset):
         name_case_insensitive (str | Unset):
         offset (int | Unset):
@@ -177,6 +185,7 @@ def sync(
         finding=finding,
         id=id,
         limit=limit,
+        location=location,
         name=name,
         name_case_insensitive=name_case_insensitive,
         offset=offset,
@@ -193,6 +202,7 @@ async def asyncio_detailed(
     finding: int | Unset = UNSET,
     id: int | Unset = UNSET,
     limit: int | Unset = UNSET,
+    location: int | Unset = UNSET,
     name: str | Unset = UNSET,
     name_case_insensitive: str | Unset = UNSET,
     offset: int | Unset = UNSET,
@@ -206,6 +216,7 @@ async def asyncio_detailed(
         finding (int | Unset):
         id (int | Unset):
         limit (int | Unset):
+        location (int | Unset):
         name (str | Unset):
         name_case_insensitive (str | Unset):
         offset (int | Unset):
@@ -226,6 +237,7 @@ async def asyncio_detailed(
         finding=finding,
         id=id,
         limit=limit,
+        location=location,
         name=name,
         name_case_insensitive=name_case_insensitive,
         offset=offset,
@@ -246,6 +258,7 @@ async def asyncio(
     finding: int | Unset = UNSET,
     id: int | Unset = UNSET,
     limit: int | Unset = UNSET,
+    location: int | Unset = UNSET,
     name: str | Unset = UNSET,
     name_case_insensitive: str | Unset = UNSET,
     offset: int | Unset = UNSET,
@@ -259,6 +272,7 @@ async def asyncio(
         finding (int | Unset):
         id (int | Unset):
         limit (int | Unset):
+        location (int | Unset):
         name (str | Unset):
         name_case_insensitive (str | Unset):
         offset (int | Unset):
@@ -281,6 +295,7 @@ async def asyncio(
             finding=finding,
             id=id,
             limit=limit,
+            location=location,
             name=name,
             name_case_insensitive=name_case_insensitive,
             offset=offset,

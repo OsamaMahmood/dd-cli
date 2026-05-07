@@ -22,9 +22,9 @@ class ProductType:
     """
     Attributes:
         id (int):
+        created (datetime.datetime | None): Time that the object was initially created, and saved to the database
+        updated (datetime.datetime | None): Time that the object was most recently saved to the database
         name (str):
-        updated (datetime.datetime | None):
-        created (datetime.datetime | None):
         members (list[int]):
         authorization_groups (list[int]):
         description (None | str | Unset):
@@ -34,9 +34,9 @@ class ProductType:
     """
 
     id: int
-    name: str
-    updated: datetime.datetime | None
     created: datetime.datetime | None
+    updated: datetime.datetime | None
+    name: str
     members: list[int]
     authorization_groups: list[int]
     description: None | str | Unset = UNSET
@@ -48,7 +48,11 @@ class ProductType:
     def to_dict(self) -> dict[str, Any]:
         id = self.id
 
-        name = self.name
+        created: None | str
+        if isinstance(self.created, datetime.datetime):
+            created = self.created.isoformat()
+        else:
+            created = self.created
 
         updated: None | str
         if isinstance(self.updated, datetime.datetime):
@@ -56,11 +60,7 @@ class ProductType:
         else:
             updated = self.updated
 
-        created: None | str
-        if isinstance(self.created, datetime.datetime):
-            created = self.created.isoformat()
-        else:
-            created = self.created
+        name = self.name
 
         members = self.members
 
@@ -85,9 +85,9 @@ class ProductType:
         field_dict.update(
             {
                 "id": id,
-                "name": name,
-                "updated": updated,
                 "created": created,
+                "updated": updated,
+                "name": name,
                 "members": members,
                 "authorization_groups": authorization_groups,
             }
@@ -110,7 +110,20 @@ class ProductType:
         d = dict(src_dict)
         id = d.pop("id")
 
-        name = d.pop("name")
+        def _parse_created(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                created_type_0 = isoparse(data)
+
+                return created_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        created = _parse_created(d.pop("created"))
 
         def _parse_updated(data: object) -> datetime.datetime | None:
             if data is None:
@@ -127,20 +140,7 @@ class ProductType:
 
         updated = _parse_updated(d.pop("updated"))
 
-        def _parse_created(data: object) -> datetime.datetime | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                created_type_0 = isoparse(data)
-
-                return created_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(datetime.datetime | None, data)
-
-        created = _parse_created(d.pop("created"))
+        name = d.pop("name")
 
         members = cast(list[int], d.pop("members"))
 
@@ -168,9 +168,9 @@ class ProductType:
 
         product_type = cls(
             id=id,
-            name=name,
-            updated=updated,
             created=created,
+            updated=updated,
+            name=name,
             members=members,
             authorization_groups=authorization_groups,
             description=description,

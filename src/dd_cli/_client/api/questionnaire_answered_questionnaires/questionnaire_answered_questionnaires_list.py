@@ -79,7 +79,8 @@ def sync_detailed(
     offset: int | Unset = UNSET,
     prefetch: list[QuestionnaireAnsweredQuestionnairesListPrefetchItem] | Unset = UNSET,
 ) -> Response[PaginatedQuestionnaireAnsweredSurveyList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -113,7 +114,8 @@ def sync(
     offset: int | Unset = UNSET,
     prefetch: list[QuestionnaireAnsweredQuestionnairesListPrefetchItem] | Unset = UNSET,
 ) -> PaginatedQuestionnaireAnsweredSurveyList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -142,7 +144,8 @@ async def asyncio_detailed(
     offset: int | Unset = UNSET,
     prefetch: list[QuestionnaireAnsweredQuestionnairesListPrefetchItem] | Unset = UNSET,
 ) -> Response[PaginatedQuestionnaireAnsweredSurveyList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -174,7 +177,8 @@ async def asyncio(
     offset: int | Unset = UNSET,
     prefetch: list[QuestionnaireAnsweredQuestionnairesListPrefetchItem] | Unset = UNSET,
 ) -> PaginatedQuestionnaireAnsweredSurveyList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):

@@ -72,7 +72,8 @@ def sync_detailed(
     client: AuthenticatedClient,
     prefetch: list[CredentialsRetrievePrefetchItem] | Unset = UNSET,
 ) -> Response[Credential]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[CredentialsRetrievePrefetchItem] | Unset):
@@ -103,7 +104,8 @@ def sync(
     client: AuthenticatedClient,
     prefetch: list[CredentialsRetrievePrefetchItem] | Unset = UNSET,
 ) -> Credential | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[CredentialsRetrievePrefetchItem] | Unset):
@@ -129,7 +131,8 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     prefetch: list[CredentialsRetrievePrefetchItem] | Unset = UNSET,
 ) -> Response[Credential]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[CredentialsRetrievePrefetchItem] | Unset):
@@ -158,7 +161,8 @@ async def asyncio(
     client: AuthenticatedClient,
     prefetch: list[CredentialsRetrievePrefetchItem] | Unset = UNSET,
 ) -> Credential | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[CredentialsRetrievePrefetchItem] | Unset):

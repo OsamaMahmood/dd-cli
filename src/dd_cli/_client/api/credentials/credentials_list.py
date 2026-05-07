@@ -75,7 +75,8 @@ def sync_detailed(
     offset: int | Unset = UNSET,
     prefetch: list[CredentialsListPrefetchItem] | Unset = UNSET,
 ) -> Response[PaginatedCredentialList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -109,7 +110,8 @@ def sync(
     offset: int | Unset = UNSET,
     prefetch: list[CredentialsListPrefetchItem] | Unset = UNSET,
 ) -> PaginatedCredentialList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -138,7 +140,8 @@ async def asyncio_detailed(
     offset: int | Unset = UNSET,
     prefetch: list[CredentialsListPrefetchItem] | Unset = UNSET,
 ) -> Response[PaginatedCredentialList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):
@@ -170,7 +173,8 @@ async def asyncio(
     offset: int | Unset = UNSET,
     prefetch: list[CredentialsListPrefetchItem] | Unset = UNSET,
 ) -> PaginatedCredentialList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         limit (int | Unset):
         offset (int | Unset):

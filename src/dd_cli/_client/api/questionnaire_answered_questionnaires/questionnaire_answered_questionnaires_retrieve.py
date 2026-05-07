@@ -74,7 +74,8 @@ def sync_detailed(
     client: AuthenticatedClient,
     prefetch: list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset = UNSET,
 ) -> Response[QuestionnaireAnsweredSurvey]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset):
@@ -105,7 +106,8 @@ def sync(
     client: AuthenticatedClient,
     prefetch: list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset = UNSET,
 ) -> QuestionnaireAnsweredSurvey | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset):
@@ -131,7 +133,8 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     prefetch: list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset = UNSET,
 ) -> Response[QuestionnaireAnsweredSurvey]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset):
@@ -160,7 +163,8 @@ async def asyncio(
     client: AuthenticatedClient,
     prefetch: list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset = UNSET,
 ) -> QuestionnaireAnsweredSurvey | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         prefetch (list[QuestionnaireAnsweredQuestionnairesRetrievePrefetchItem] | Unset):

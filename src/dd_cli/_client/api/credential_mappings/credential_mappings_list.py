@@ -91,7 +91,8 @@ def sync_detailed(
     test: int | Unset = UNSET,
     url_query: str | Unset = UNSET,
 ) -> Response[PaginatedCredentialMappingList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         cred_id (int | Unset):
         engagement (int | Unset):
@@ -143,7 +144,8 @@ def sync(
     test: int | Unset = UNSET,
     url_query: str | Unset = UNSET,
 ) -> PaginatedCredentialMappingList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         cred_id (int | Unset):
         engagement (int | Unset):
@@ -190,7 +192,8 @@ async def asyncio_detailed(
     test: int | Unset = UNSET,
     url_query: str | Unset = UNSET,
 ) -> Response[PaginatedCredentialMappingList]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         cred_id (int | Unset):
         engagement (int | Unset):
@@ -240,7 +243,8 @@ async def asyncio(
     test: int | Unset = UNSET,
     url_query: str | Unset = UNSET,
 ) -> PaginatedCredentialMappingList | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         cred_id (int | Unset):
         engagement (int | Unset):

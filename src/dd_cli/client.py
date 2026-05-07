@@ -143,6 +143,49 @@ class DefectDojoClient:
         # Reuse the JSON-error-extraction path:
         self._parse_response(response)
 
+    def upload(
+        self,
+        path: str,
+        *,
+        data: Mapping[str, Any] | None = None,
+        file: tuple[str, bytes] | None = None,
+        file_field: str = "file",
+    ) -> dict[str, Any]:
+        """POST a multipart/form-data request, optionally with a file part.
+
+        Used by the import workflows to upload scan reports to
+        `/api/v2/reimport-scan/` and `/api/v2/import-languages/`. Goes through
+        the same retry + error-mapping pipeline as the JSON helpers.
+
+        `data` is the form fields (DefectDojo accepts every payload field
+        either in JSON or as form values for these endpoints). `file` is an
+        optional `(filename, content_bytes)` tuple. When `file` is None we
+        still send a multipart body with an empty file slot — matching the
+        legacy `dd-import` behavior so DefectDojo reuses the previous scan
+        file on a re-import without a new payload.
+        """
+        form_data: dict[str, Any] = _flatten_for_multipart(data or {})
+        # httpx requires a non-empty `files` dict to switch to multipart;
+        # pass an empty placeholder when no actual file is provided.
+        files = (
+            {file_field: (file[0], file[1], "application/json")}
+            if file is not None
+            else {file_field: ("", b"", "application/octet-stream")}
+        )
+
+        def _call() -> httpx.Response:
+            return self._raw.get_httpx_client().post(
+                path,
+                data=form_data,
+                files=files,
+            )
+
+        response = self._with_retry(_call)
+        body = self._parse_response(response)
+        if not isinstance(body, Mapping):
+            raise APIError(f"Unexpected response shape from POST {path}")
+        return dict(body)
+
     def paginate(
         self,
         path: str,
@@ -281,3 +324,25 @@ class DefectDojoClient:
 def _ensure_unexpected_status_imported() -> type[UnexpectedStatus]:
     """Re-export the generated client's exception so callers don't need to dig into _client/."""
     return UnexpectedStatus
+
+
+def _flatten_for_multipart(data: Mapping[str, Any]) -> dict[str, Any]:
+    """Coerce form-data values for httpx multipart submission.
+
+    DefectDojo's reimport-scan endpoint accepts either JSON or form-encoded
+    bodies. When we send multipart, lists must be repeated keys and bools
+    must be the strings httpx-form encoders recognise. None values are
+    dropped so they don't appear as the literal string "None".
+    """
+    out: dict[str, Any] = {}
+    for key, value in data.items():
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            out[key] = "true" if value else "false"
+        elif isinstance(value, list):
+            # httpx repeats the field name when given a list of strings
+            out[key] = [str(v) for v in value]
+        else:
+            out[key] = str(value) if not isinstance(value, (int, float)) else value
+    return out

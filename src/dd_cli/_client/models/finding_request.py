@@ -34,6 +34,7 @@ class FindingRequest:
         push_to_jira (bool | Unset):  Default: False.
         vulnerability_ids (list[VulnerabilityIdRequest] | Unset):
         reporter (int | Unset):
+        endpoints (list[int] | Unset):
         date (datetime.date | Unset): The date the flaw was discovered.
         sla_start_date (datetime.date | None | Unset): (readonly)The date used as start date for SLA calculation. Set by
             expiring risk acceptances. Empty by default, causing a fallback to 'date'.
@@ -114,6 +115,7 @@ class FindingRequest:
     push_to_jira: bool | Unset = False
     vulnerability_ids: list[VulnerabilityIdRequest] | Unset = UNSET
     reporter: int | Unset = UNSET
+    endpoints: list[int] | Unset = UNSET
     date: datetime.date | Unset = UNSET
     sla_start_date: datetime.date | None | Unset = UNSET
     sla_expiration_date: datetime.date | None | Unset = UNSET
@@ -206,6 +208,10 @@ class FindingRequest:
                 vulnerability_ids.append(vulnerability_ids_item)
 
         reporter = self.reporter
+
+        endpoints: list[int] | Unset = UNSET
+        if not isinstance(self.endpoints, Unset):
+            endpoints = self.endpoints
 
         date: str | Unset = UNSET
         if not isinstance(self.date, Unset):
@@ -490,6 +496,8 @@ class FindingRequest:
             field_dict["vulnerability_ids"] = vulnerability_ids
         if reporter is not UNSET:
             field_dict["reporter"] = reporter
+        if endpoints is not UNSET:
+            field_dict["endpoints"] = endpoints
         if date is not UNSET:
             field_dict["date"] = date
         if sla_start_date is not UNSET:
@@ -651,6 +659,12 @@ class FindingRequest:
 
         if not isinstance(self.reporter, Unset):
             files.append(("reporter", (None, str(self.reporter).encode(), "text/plain")))
+
+        if not isinstance(self.endpoints, Unset):
+            for endpoints_item_element in self.endpoints:
+                files.append(
+                    ("endpoints", (None, str(endpoints_item_element).encode(), "text/plain"))
+                )
 
         if not isinstance(self.date, Unset):
             files.append(("date", (None, self.date.isoformat().encode(), "text/plain")))
@@ -1169,6 +1183,8 @@ class FindingRequest:
 
         reporter = d.pop("reporter", UNSET)
 
+        endpoints = cast(list[int], d.pop("endpoints", UNSET))
+
         _date = d.pop("date", UNSET)
         date: datetime.date | Unset
         if isinstance(_date, Unset):
@@ -1588,6 +1604,7 @@ class FindingRequest:
             push_to_jira=push_to_jira,
             vulnerability_ids=vulnerability_ids,
             reporter=reporter,
+            endpoints=endpoints,
             date=date,
             sla_start_date=sla_start_date,
             sla_expiration_date=sla_expiration_date,

@@ -86,6 +86,7 @@ def _get_kwargs(
     epss_percentile_min: float | None | Unset = UNSET,
     epss_score_max: float | None | Unset = UNSET,
     epss_score_min: float | None | Unset = UNSET,
+    exact_title: str | Unset = UNSET,
     false_p: bool | Unset = UNSET,
     file_path: str | Unset = UNSET,
     finding_group: list[float] | Unset = UNSET,
@@ -182,6 +183,7 @@ def _get_kwargs(
     under_defect_review: bool | Unset = UNSET,
     under_review: bool | Unset = UNSET,
     unique_id_from_tool: str | Unset = UNSET,
+    updated: datetime.datetime | Unset = UNSET,
     verified: bool | Unset = UNSET,
     vuln_id_from_tool: str | Unset = UNSET,
     vulnerability_id: str | Unset = UNSET,
@@ -296,6 +298,8 @@ def _get_kwargs(
     else:
         json_epss_score_min = epss_score_min
     params["epss_score_min"] = json_epss_score_min
+
+    params["exact_title"] = exact_title
 
     params["false_p"] = false_p
 
@@ -659,6 +663,11 @@ def _get_kwargs(
 
     params["unique_id_from_tool"] = unique_id_from_tool
 
+    json_updated: str | Unset = UNSET
+    if not isinstance(updated, Unset):
+        json_updated = updated.isoformat()
+    params["updated"] = json_updated
+
     params["verified"] = verified
 
     params["vuln_id_from_tool"] = vuln_id_from_tool
@@ -751,6 +760,7 @@ def sync_detailed(
     epss_percentile_min: float | None | Unset = UNSET,
     epss_score_max: float | None | Unset = UNSET,
     epss_score_min: float | None | Unset = UNSET,
+    exact_title: str | Unset = UNSET,
     false_p: bool | Unset = UNSET,
     file_path: str | Unset = UNSET,
     finding_group: list[float] | Unset = UNSET,
@@ -847,6 +857,7 @@ def sync_detailed(
     under_defect_review: bool | Unset = UNSET,
     under_review: bool | Unset = UNSET,
     unique_id_from_tool: str | Unset = UNSET,
+    updated: datetime.datetime | Unset = UNSET,
     verified: bool | Unset = UNSET,
     vuln_id_from_tool: str | Unset = UNSET,
     vulnerability_id: str | Unset = UNSET,
@@ -879,6 +890,7 @@ def sync_detailed(
         epss_percentile_min (float | None | Unset):
         epss_score_max (float | None | Unset):
         epss_score_min (float | None | Unset):
+        exact_title (str | Unset):
         false_p (bool | Unset):
         file_path (str | Unset):
         finding_group (list[float] | Unset):
@@ -969,6 +981,7 @@ def sync_detailed(
         under_defect_review (bool | Unset):
         under_review (bool | Unset):
         unique_id_from_tool (str | Unset):
+        updated (datetime.datetime | Unset):
         verified (bool | Unset):
         vuln_id_from_tool (str | Unset):
         vulnerability_id (str | Unset):
@@ -1010,6 +1023,7 @@ def sync_detailed(
         epss_percentile_min=epss_percentile_min,
         epss_score_max=epss_score_max,
         epss_score_min=epss_score_min,
+        exact_title=exact_title,
         false_p=false_p,
         file_path=file_path,
         finding_group=finding_group,
@@ -1094,6 +1108,7 @@ def sync_detailed(
         under_defect_review=under_defect_review,
         under_review=under_review,
         unique_id_from_tool=unique_id_from_tool,
+        updated=updated,
         verified=verified,
         vuln_id_from_tool=vuln_id_from_tool,
         vulnerability_id=vulnerability_id,
@@ -1141,6 +1156,7 @@ def sync(
     epss_percentile_min: float | None | Unset = UNSET,
     epss_score_max: float | None | Unset = UNSET,
     epss_score_min: float | None | Unset = UNSET,
+    exact_title: str | Unset = UNSET,
     false_p: bool | Unset = UNSET,
     file_path: str | Unset = UNSET,
     finding_group: list[float] | Unset = UNSET,
@@ -1237,6 +1253,7 @@ def sync(
     under_defect_review: bool | Unset = UNSET,
     under_review: bool | Unset = UNSET,
     unique_id_from_tool: str | Unset = UNSET,
+    updated: datetime.datetime | Unset = UNSET,
     verified: bool | Unset = UNSET,
     vuln_id_from_tool: str | Unset = UNSET,
     vulnerability_id: str | Unset = UNSET,
@@ -1269,6 +1286,7 @@ def sync(
         epss_percentile_min (float | None | Unset):
         epss_score_max (float | None | Unset):
         epss_score_min (float | None | Unset):
+        exact_title (str | Unset):
         false_p (bool | Unset):
         file_path (str | Unset):
         finding_group (list[float] | Unset):
@@ -1359,6 +1377,7 @@ def sync(
         under_defect_review (bool | Unset):
         under_review (bool | Unset):
         unique_id_from_tool (str | Unset):
+        updated (datetime.datetime | Unset):
         verified (bool | Unset):
         vuln_id_from_tool (str | Unset):
         vulnerability_id (str | Unset):
@@ -1401,6 +1420,7 @@ def sync(
         epss_percentile_min=epss_percentile_min,
         epss_score_max=epss_score_max,
         epss_score_min=epss_score_min,
+        exact_title=exact_title,
         false_p=false_p,
         file_path=file_path,
         finding_group=finding_group,
@@ -1485,6 +1505,7 @@ def sync(
         under_defect_review=under_defect_review,
         under_review=under_review,
         unique_id_from_tool=unique_id_from_tool,
+        updated=updated,
         verified=verified,
         vuln_id_from_tool=vuln_id_from_tool,
         vulnerability_id=vulnerability_id,
@@ -1526,6 +1547,7 @@ async def asyncio_detailed(
     epss_percentile_min: float | None | Unset = UNSET,
     epss_score_max: float | None | Unset = UNSET,
     epss_score_min: float | None | Unset = UNSET,
+    exact_title: str | Unset = UNSET,
     false_p: bool | Unset = UNSET,
     file_path: str | Unset = UNSET,
     finding_group: list[float] | Unset = UNSET,
@@ -1622,6 +1644,7 @@ async def asyncio_detailed(
     under_defect_review: bool | Unset = UNSET,
     under_review: bool | Unset = UNSET,
     unique_id_from_tool: str | Unset = UNSET,
+    updated: datetime.datetime | Unset = UNSET,
     verified: bool | Unset = UNSET,
     vuln_id_from_tool: str | Unset = UNSET,
     vulnerability_id: str | Unset = UNSET,
@@ -1654,6 +1677,7 @@ async def asyncio_detailed(
         epss_percentile_min (float | None | Unset):
         epss_score_max (float | None | Unset):
         epss_score_min (float | None | Unset):
+        exact_title (str | Unset):
         false_p (bool | Unset):
         file_path (str | Unset):
         finding_group (list[float] | Unset):
@@ -1744,6 +1768,7 @@ async def asyncio_detailed(
         under_defect_review (bool | Unset):
         under_review (bool | Unset):
         unique_id_from_tool (str | Unset):
+        updated (datetime.datetime | Unset):
         verified (bool | Unset):
         vuln_id_from_tool (str | Unset):
         vulnerability_id (str | Unset):
@@ -1785,6 +1810,7 @@ async def asyncio_detailed(
         epss_percentile_min=epss_percentile_min,
         epss_score_max=epss_score_max,
         epss_score_min=epss_score_min,
+        exact_title=exact_title,
         false_p=false_p,
         file_path=file_path,
         finding_group=finding_group,
@@ -1869,6 +1895,7 @@ async def asyncio_detailed(
         under_defect_review=under_defect_review,
         under_review=under_review,
         unique_id_from_tool=unique_id_from_tool,
+        updated=updated,
         verified=verified,
         vuln_id_from_tool=vuln_id_from_tool,
         vulnerability_id=vulnerability_id,
@@ -1914,6 +1941,7 @@ async def asyncio(
     epss_percentile_min: float | None | Unset = UNSET,
     epss_score_max: float | None | Unset = UNSET,
     epss_score_min: float | None | Unset = UNSET,
+    exact_title: str | Unset = UNSET,
     false_p: bool | Unset = UNSET,
     file_path: str | Unset = UNSET,
     finding_group: list[float] | Unset = UNSET,
@@ -2010,6 +2038,7 @@ async def asyncio(
     under_defect_review: bool | Unset = UNSET,
     under_review: bool | Unset = UNSET,
     unique_id_from_tool: str | Unset = UNSET,
+    updated: datetime.datetime | Unset = UNSET,
     verified: bool | Unset = UNSET,
     vuln_id_from_tool: str | Unset = UNSET,
     vulnerability_id: str | Unset = UNSET,
@@ -2042,6 +2071,7 @@ async def asyncio(
         epss_percentile_min (float | None | Unset):
         epss_score_max (float | None | Unset):
         epss_score_min (float | None | Unset):
+        exact_title (str | Unset):
         false_p (bool | Unset):
         file_path (str | Unset):
         finding_group (list[float] | Unset):
@@ -2132,6 +2162,7 @@ async def asyncio(
         under_defect_review (bool | Unset):
         under_review (bool | Unset):
         unique_id_from_tool (str | Unset):
+        updated (datetime.datetime | Unset):
         verified (bool | Unset):
         vuln_id_from_tool (str | Unset):
         vulnerability_id (str | Unset):
@@ -2175,6 +2206,7 @@ async def asyncio(
             epss_percentile_min=epss_percentile_min,
             epss_score_max=epss_score_max,
             epss_score_min=epss_score_min,
+            exact_title=exact_title,
             false_p=false_p,
             file_path=file_path,
             finding_group=finding_group,
@@ -2259,6 +2291,7 @@ async def asyncio(
             under_defect_review=under_defect_review,
             under_review=under_review,
             unique_id_from_tool=unique_id_from_tool,
+            updated=updated,
             verified=verified,
             vuln_id_from_tool=vuln_id_from_tool,
             vulnerability_id=vulnerability_id,

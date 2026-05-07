@@ -82,7 +82,8 @@ def sync_detailed(
     | PatchedStubFindingRequest
     | Unset = UNSET,
 ) -> Response[StubFinding]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedStubFindingRequest | Unset):
@@ -118,7 +119,8 @@ def sync(
     | PatchedStubFindingRequest
     | Unset = UNSET,
 ) -> StubFinding | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedStubFindingRequest | Unset):
@@ -149,7 +151,8 @@ async def asyncio_detailed(
     | PatchedStubFindingRequest
     | Unset = UNSET,
 ) -> Response[StubFinding]:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedStubFindingRequest | Unset):
@@ -183,7 +186,8 @@ async def asyncio(
     | PatchedStubFindingRequest
     | Unset = UNSET,
 ) -> StubFinding | None:
-    """
+    """This endpoint is deprecated and will be removed on 2026-06-01.
+
     Args:
         id (int):
         body (PatchedStubFindingRequest | Unset):

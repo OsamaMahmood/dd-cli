@@ -50,6 +50,7 @@ class EngagementRequest:
             * `Completed` - Completed
             * `In Progress` - In Progress
             * `On Hold` - On Hold
+            * `Scheduled` - Scheduled
             * `Waiting for Resource` - Waiting for Resource
         engagement_type (EngagementRequestEngagementTypeType1 | EngagementRequestEngagementTypeType2Type1 |
             EngagementRequestEngagementTypeType3Type1 | None | Unset): * `Interactive` - Interactive
