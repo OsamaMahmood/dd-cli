@@ -75,7 +75,7 @@ podman run --rm \
   ping     # or any other dd subcommand
 ```
 
-> Docker images are published to `ghcr.io/osamamahmood/dd-cli` and `osamamahmood/dd-cli` on each tag. Until those land in M5b, build locally: `podman build -t dd-cli .`
+> Docker images are published to `ghcr.io/osamamahmood/dd-cli` (GitHub Container Registry) and `m4rkm3n/dd-cli` (Docker Hub) on each tag.
 
 ## Quickstart
 

@@ -172,10 +172,13 @@ jobs:
         # Prerelease tag (v2.0.0-rc.1): produces 2.0.0-rc.1 only — no
         # latest, no truncated semver aliases (those should always point
         # at a stable release).
+        # Note: GHCR namespace mirrors the GitHub user (osamamahmood);
+        # Docker Hub namespace is m4rkm3n/dd-cli — the maintainer's
+        # Docker Hub username, which differs from their GitHub handle.
         run: |
           TAG="${GITHUB_REF_NAME#v}"
           GHCR_IMAGE="ghcr.io/osamamahmood/dd-cli"
-          DH_IMAGE="osamamahmood/dd-cli"
+          DH_IMAGE="m4rkm3n/dd-cli"
 
           if [[ "$TAG" == *-* ]]; then
             # Prerelease — exact version only
