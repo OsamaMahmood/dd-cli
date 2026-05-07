@@ -15,7 +15,7 @@ contract matches the legacy tool exactly:
 For new users we recommend ``dd import findings`` / ``dd import
 languages`` (typed exit codes, dry-run, profile support). These shims
 exist to keep existing pipelines working unchanged through the
-``dd-import`` → ``defectdojo-cli`` migration.
+``dd-import`` → ``dd-cli`` migration.
 """
 
 from __future__ import annotations
