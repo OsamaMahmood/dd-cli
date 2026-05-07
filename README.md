@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/dd-cli.svg)](https://pypi.org/project/dd-cli/)
 [![Python](https://img.shields.io/pypi/pyversions/dd-cli.svg)](https://pypi.org/project/dd-cli/)
 [![CI](https://github.com/OsamaMahmood/dd-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/OsamaMahmood/dd-cli/actions/workflows/ci.yml)
+[![Docs](https://github.com/OsamaMahmood/dd-cli/actions/workflows/docs.yml/badge.svg)](https://osamamahmood.github.io/dd-cli/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE.txt)
 
 A production-grade CLI for managing [DefectDojo](https://www.defectdojo.org/) — list / create / update / delete every resource the API exposes, plus a fully backward-compatible import path for users coming from the original [`dd-import`](https://github.com/MaibornWolff/dd-import) tool (now archived).
@@ -236,13 +237,13 @@ The new and legacy entry points have one deliberate difference:
 - `dd-reimport-findings` exits **`1` on any failure** (legacy contract — pipelines that grep `$?` keep working)
 - `dd import findings` exits with **typed codes**: 3 (auth), 5 (not found), 6 (validation), 7 (API), 8 (network), 9 (config). Useful for branching CI logic.
 
-A full DD_* env-var reference lives in [`docs/configuration.md`](docs/configuration.md) (in M5b3) and is pinned by a 9-test `@pytest.mark.compat` suite in [`tests/compat/`](tests/compat/).
+A full DD_* env-var reference lives in the [Configuration guide](https://osamamahmood.github.io/dd-cli/configuration/) and is pinned by a 9-test `@pytest.mark.compat` suite in [`tests/compat/`](tests/compat/).
 
 ## Documentation
 
+- **[Documentation site](https://osamamahmood.github.io/dd-cli/)** — install, quickstart, configuration, CLI reference, CI recipes, migration guide
 - [`PLAN.md`](PLAN.md) — architecture and roadmap
 - [`RELEASING.md`](RELEASING.md) — how releases are cut and published
-- `docs/` — full user guide (in M5b3)
 
 ## Development
 

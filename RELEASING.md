@@ -148,6 +148,28 @@ docker/build-push-action@*
 
 (`docker/login-action@*` is already allowlisted.)
 
+## Documentation site
+
+The MkDocs site at [osamamahmood.github.io/dd-cli](https://osamamahmood.github.io/dd-cli/)
+is built and deployed by [`.github/workflows/docs.yml`](.github/workflows/docs.yml)
+on every push to `main` that touches `docs/**`, `mkdocs.yml`, or the
+CLI source (so auto-generated CLI reference stays in sync). Tag pushes
+do not need to redeploy docs separately.
+
+### One-time setup
+
+1. **Settings → Pages →** set the source to **GitHub Actions**.
+2. The workflow uses `actions/upload-pages-artifact@v3` and
+   `actions/deploy-pages@v4` — already allowlisted (GitHub-official).
+
+To rebuild docs locally:
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve            # http://localhost:8000
+mkdocs build --strict   # what CI runs
+```
+
 ## What the workflow does NOT do yet
 
 - **Homebrew formula bump** PR to `OsamaMahmood/homebrew-tap` —
