@@ -42,14 +42,17 @@ jobs:
           docker compose up -d
           docker compose ps
 
-      - name: Wait for DefectDojo API to respond
+      - name: Wait for DefectDojo to respond
+        # /login/ is a public Django page; once it returns 200, nginx + uwsgi
+        # are both serving requests. We can't probe /api/v2/users/ because it
+        # requires auth and returns 403 on every poll, which curl -sf rejects.
         run: |
           for i in $(seq 1 90); do
-            if curl -sfo /dev/null http://localhost:8080/api/v2/users/; then
-              echo "DefectDojo /api/v2/ is live (after ${i}0s)"
+            if curl -sfLo /dev/null http://localhost:8080/login/; then
+              echo "DefectDojo /login/ is live (after ${i}0s)"
               exit 0
             fi
-            echo "still waiting for /api/v2/... ($i/90)"
+            echo "still waiting for /login/... ($i/90)"
             sleep 10
           done
           echo "DefectDojo never came up" >&2
