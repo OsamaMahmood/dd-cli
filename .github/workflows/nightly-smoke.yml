@@ -35,38 +35,36 @@ jobs:
         run: |
           git clone --depth 1 --branch master https://github.com/DefectDojo/django-DefectDojo /tmp/dd
 
-      - name: Bring DefectDojo up (release image)
+      - name: Bring DefectDojo up and prepare credentials
+        # Single step: spin DD up, wait for /login (verified working route),
+        # parse admin password from initializer logs, mint an API token.
+        # Combining avoids any inter-step state weirdness and surfaces the
+        # whole bring-up + auth flow in one place that's easy to read.
+        id: dd
         working-directory: /tmp/dd
         run: |
+          set -euo pipefail
+
           docker/setEnv.sh release
           docker compose up -d
           docker compose ps
 
-      - name: Wait for DefectDojo to respond
-        # Probe /api/v2/api-token-auth/ with POST (no body). Once uwsgi is
-        # serving, DRF replies 400 ("username/password required") — that's
-        # readiness. 502 / connection-refused = nginx can't reach uwsgi yet.
-        # We deliberately don't pin to a specific path like /login/ that
-        # upstream may rename — any non-5xx HTTP status proves uwsgi is up.
-        run: |
+          echo "::group::Wait for /login to respond"
           for i in $(seq 1 90); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X POST http://localhost:8080/api/v2/api-token-auth/ \
-              -H "Content-Type: application/json" -d '{}')
-            if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
-              echo "DefectDojo is serving (HTTP $STATUS, after ${i}0s)"
-              exit 0
+            if curl -sfo /dev/null http://localhost:8080/login; then
+              echo "DefectDojo /login is live (after ${i}0s)"
+              break
             fi
-            echo "still waiting (HTTP $STATUS)... ($i/90)"
+            echo "still waiting... ($i/90)"
             sleep 10
           done
-          echo "DefectDojo never came up" >&2
-          exit 1
+          if ! curl -sfo /dev/null http://localhost:8080/login; then
+            echo "DefectDojo never came up after 15 minutes" >&2
+            exit 1
+          fi
+          echo "::endgroup::"
 
-      - name: Wait for initializer to finish and capture admin password
-        id: creds
-        working-directory: /tmp/dd
-        run: |
+          echo "::group::Parse admin password from initializer logs"
           for i in $(seq 1 60); do
             if docker compose logs initializer 2>&1 | grep -q "Admin password:"; then
               break
@@ -85,26 +83,25 @@ jobs:
             exit 1
           fi
           echo "::add-mask::$ADMIN_PASS"
-          echo "admin_password=$ADMIN_PASS" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
 
-      - name: Mint API token
-        id: token
-        run: |
+          echo "::group::Mint API token"
           TOKEN=$(curl -sf -X POST http://localhost:8080/api/v2/api-token-auth/ \
             -H "Content-Type: application/json" \
-            -d "{\"username\":\"admin\",\"password\":\"${{ steps.creds.outputs.admin_password }}\"}" \
-            | python -c "import json,sys; print(json.load(sys.stdin)['token'])")
+            -d "{\"username\":\"admin\",\"password\":\"$ADMIN_PASS\"}" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
           if [ -z "$TOKEN" ]; then
             echo "Failed to mint API token" >&2
             exit 1
           fi
           echo "::add-mask::$TOKEN"
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
 
       - name: Run integration suite
         env:
           DD_URL: http://localhost:8080
-          DD_API_KEY: ${{ steps.token.outputs.token }}
+          DD_API_KEY: ${{ steps.dd.outputs.token }}
         run: make smoke
 
       - name: Capture DefectDojo logs on failure
