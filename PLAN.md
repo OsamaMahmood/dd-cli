@@ -354,7 +354,7 @@ Acceptance:
 
 ### `nightly-smoke.yml` (cron) ✅
 - Clones DefectDojo `master`, runs `docker/setEnv.sh release && docker compose up -d`.
-- Polls `/api/v2/users/`, mints an API token via `/api/v2/api-token-auth/` using the admin password parsed from the initializer logs.
+- Polls `/login` until it returns 200, parses the admin password from the initializer container's logs, and mints an API token via `/api/v2/api-token-auth/`. Bring-up and auth are consolidated in one step so the password stays in shell scope and never round-trips through `GITHUB_OUTPUT`.
 - Runs `make smoke` (24 integration tests).
 - On scheduled-run failure, opens a deduped GitHub issue labelled `nightly-smoke`.
 
@@ -364,14 +364,14 @@ Acceptance:
 
 ## 11. Distribution
 
-| Channel | Artifact | Audience |
-|---|---|---|
-| PyPI | `dd-cli` | Python users, CI runners |
-| PyPI | `dd-import` (shim, one release) | Existing users — soft migration |
-| Docker (ghcr.io) | `ghcr.io/osamamahmood/dd-cli:tag` | CI pipelines |
-| Docker Hub | `osamamahmood/dd-cli:tag` | Existing CI pipelines (legacy image name preserved) |
-| Homebrew | `osamamahmood/tap/dd-cli` | macOS/Linux developers |
-| GitHub Releases | sdist + wheel + checksums + SBOM | Air-gapped installs |
+| Channel | Artifact | Audience | Status |
+|---|---|---|---|
+| PyPI | `dd-cli` | Python users, CI runners | ✅ shipped |
+| Docker (ghcr.io) | `ghcr.io/osamamahmood/dd-cli:tag` | CI pipelines | ✅ shipped |
+| Docker Hub | `m4rkm3n/dd-cli:tag` | CI pipelines (different namespace from the GitHub handle) | ✅ shipped |
+| GitHub Releases | sdist + wheel + `SHA256SUMS` | Air-gapped installs | ✅ shipped |
+| Homebrew | `osamamahmood/tap/dd-cli` | macOS/Linux developers | deferred — see §14 |
+| PyPI | `dd-import` (shim) | Existing users — soft migration | superseded by `dd-cli` (legacy console scripts ship inside it) |
 
 `pipx install dd-cli` is the recommended developer-machine install.
 
