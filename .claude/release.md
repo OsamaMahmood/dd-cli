@@ -273,7 +273,7 @@ Someone (probably a prior run) already published this version. **Don't reset `sk
 
 ## What the release workflow does NOT do
 
-- **Homebrew formula bump** — deferred post-v2.0. pip/pipx is the recommended developer install. Adding a Homebrew tap would mean per-release resource-list generation and a separate repo to maintain; the trade-off was judged not worth it for the install volume (PLAN.md §14).
+- **Homebrew formula bump** — deferred post-v2.0. pip/pipx is the recommended developer install. Adding a Homebrew tap would mean per-release resource-list generation and a separate repo to maintain; the trade-off was judged not worth it for the install volume (see [.claude/decisions.md](decisions.md#why-no-homebrew-tap-yet)).
 - **cosign signing** of the published artifacts — deferred.
 - **`dd-import` shim package** publish — deferred. The legacy console scripts ship inside `dd-cli` itself, so existing `dd-import` users `pip install dd-cli` instead of `pip install dd-import==<shim-version>`.
 - **CHANGELOG.md update** — there is no `CHANGELOG.md` file. The GitHub Release's auto-generated notes (`--generate-notes`) replace it. The `pyproject.toml [project.urls].Changelog` URL still points at a missing file in the repo; this is a known cleanup-task gap.

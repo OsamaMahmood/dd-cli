@@ -4,6 +4,74 @@ The durable project lore. Why `dd-cli` is the way it is, with the specific incid
 
 If you find yourself confused by a design choice, check here first; if it's not documented, ask before changing.
 
+## Locked-in design decisions (D1–D17)
+
+The table below was the pre-implementation contract for `dd-cli` — every choice was flagged before scaffolding so the team could push back. None of them have been overturned. Anchored here in case you're tempted to revisit one without realising it was decided deliberately.
+
+| # | Decision | Choice | Rationale |
+|---|---|---|---|
+| D1 | Minimum Python | **3.11** | Better typing (`Self`, exception groups), ~25% faster startup than 3.10, universally available on CI. |
+| D2 | CLI framework | **Typer 0.12+** | Type-hint driven, Click-based, automatic shell completion, industry standard. |
+| D3 | API client | **Generated** via `openapi-python-client`, **vendored** in `src/dd_cli/_client/` | 450 endpoints typed for free; regen via `make generate-client`. Vendoring keeps installs offline-friendly and PRs greppable. |
+| D4 | Config | **pydantic-settings** with TOML profiles at `~/.config/dd-cli/config.toml` | Layered: CLI flag > env var > profile > defaults. `DD_*` env vars wired in as aliases. |
+| D5 | Terminal output | **Rich** for humans; orjson/PyYAML for `--output json\|yaml` | Pretty by default, scriptable on demand. |
+| D6 | Packaging | **`pyproject.toml` only**, build via **hatchling + hatch-vcs** | Drop `setup.cfg` and `requirements.txt`. Version comes from the git tag, not a hand-bumped field. |
+| D7 | Lint/format | **ruff** | Replaces flake8 + black + isort. One tool. |
+| D8 | Type check | **mypy --strict** | Cheaper than pyright in CI; catches the same bugs for our code. |
+| D9 | Test framework | **pytest** + `pytest-httpx` + `syrupy` (snapshots) + `coverage` | Migrate off `unittest`. |
+| D10 | PyPI name | **`dd-cli`** (binary command: `dd`) | Originally locked in as `defectdojo-cli` but that name turned out to be taken on PyPI by an unrelated project. `dd-cli` was available, matches the binary, and matches the GitHub repo name. See "PyPI name pivot" below. |
+| D11 | Repo layout | **src layout** | Standard, prevents shadowing during dev. |
+| D12 | Docs | **mkdocs-material**, command reference auto-generated from Typer via `mkdocs-click` | Single source of truth, deploys to GitHub Pages. |
+| D13 | Versioning | **SemVer**. v0.x during scaffolding, v1.0 = legacy parity, v2.0 = full mgmt CLI | Predictable for downstream pipelines. |
+| D14 | License | **3-Clause BSD** (unchanged from upstream) | Honors original license terms. |
+| D15 | Docker base | **`python:3.12-slim`** | No musl quirks; ~30 MB larger than alpine but compatible with every scanner JSON parser we've seen. |
+| D16 | Homebrew tap | **`OsamaMahmood/homebrew-tap`** (new repo) | Originally planned for M5; deferred post-v2.0 — see "Why no Homebrew tap (yet)" below. |
+| D17 | Generated client regen cadence | **On-demand**, when a new endpoint is needed | Avoids churn; minor DD releases don't force a regen. |
+
+## Project goals and non-goals
+
+**Goals** (what dd-cli is for):
+1. Full management CLI for the 12 DefectDojo resources users actually manage day-to-day.
+2. 100% backward compatibility with the existing `DD_*` env-var contract and the `dd-reimport-findings` / `dd-import-languages` console scripts.
+3. Production-grade UX: Rich output, `--output json|yaml|table`, shell completion, profiles, helpful error messages, `--dry-run`, confirmation prompts.
+4. Production-grade quality: typed throughout (`mypy --strict`), ≥85% test coverage target, automated PyPI + Docker releases.
+5. Sustainable for a solo maintainer: API client regenerable from `dd-api.json` in seconds; automation everywhere.
+
+**Non-goals** (what dd-cli is *not*, by design — if you're proposing one of these, expect pushback):
+- **Not a TUI.** Plain CLI only. Interactive Textual-based UI is post-v2 scope.
+- **Not a daemon, webhook server, or long-running process.** Each invocation is a one-shot.
+- **Not a marketed Python SDK.** The generated client at `src/dd_cli/_client/` is an internal dependency, not a public API. Don't import from it outside `dd_cli.client`.
+- **Not a scanner.** We import scanner output; we don't run scanners.
+- **Not a DefectDojo replacement or fork.** We talk to DefectDojo over its REST API.
+
+## Milestone history (v0.x → v2.0)
+
+`dd-cli` shipped in six milestones over ~6.5 weeks. Anchoring the timeline here so the current state makes sense; the per-PR git log has the full detail.
+
+| Milestone | What shipped | Tag |
+|---|---|---|
+| **M0** | Scaffold — `pyproject.toml`, src layout, Makefile, generated client wiring, Typer skeleton, ci.yml | `v0.1.0` |
+| **M1** | Config layer (pydantic-settings, TOML profiles, `DD_*` aliases), `DefectDojoClient` (retry + pagination + error mapping), output renderers, `dd ping`, `dd configure`, `dd config get/set/list/use` | `v0.2.0` |
+| **M2** | Read commands — `list` + `get` for 12 resources; snapshot tests; the `_resource.py` shared helpers pattern | `v0.3.0` |
+| **M3** | Write commands — `create`/`update`/`delete`/`edit` + action verbs (`findings close`, `engagements close`, `users deactivate`, etc.); `--dry-run` and `--yes` enforcement | `v1.0.0` |
+| **M4** | Import workflows (`workflows/import_findings.py`, `workflows/import_languages.py`), legacy console-script shims (`cli/legacy.py`), Dockerfile rewrite (multi-stage, non-root), `dd-import/` deletion | (M4-a/b inside the v1.x line) |
+| **M5** | Polish & v2.0 — PyPI OIDC publishing, multi-arch Docker (GHCR + Docker Hub), mkdocs-material site at GitHub Pages, mkdocs-click auto-generated CLI reference, migration guide, CI recipes, nightly-smoke workflow | `v2.0.0` (2026-05-07) |
+
+What v2.0 explicitly did *not* ship: a Homebrew tap (deferred — see below), a separate `dd-import` PyPI shim package (superseded by in-repo console scripts — see below), telemetry (out of scope), CHANGELOG.md (use GitHub Releases auto-notes instead).
+
+## Risks the project actively manages
+
+These were called out before v1.0 and the mitigations live in code/CI today. Re-listed here so contributors don't accidentally weaken the mitigation:
+
+| Risk | Likelihood | Impact | Mitigation (where it lives) |
+|---|---|---|---|
+| Generated client breaks on DD spec change | Medium | High | Pin `dd-api.json`; regenerate intentionally via `make generate-client`; nightly-smoke catches regressions against DD master. |
+| DefectDojo introduces breaking API changes | Medium | High | Nightly-smoke against latest `master` opens a deduped issue on failure — `.github/workflows/nightly-smoke.yml`. |
+| Backward-compat regression silently breaks user CI | Low | **Critical** | `tests/compat/` suite gates every PR; snapshots the request payloads of legacy flows; assert exact stdout strings (including the legacy emojis). See [compatibility.md](compatibility.md). |
+| `dd-cli` PyPI name unavailable | (Realised) | Low | Already happened with `defectdojo-cli`; pivoted to `dd-cli` in M5a. Future package names: check PyPI first. |
+| Solo-maintainer burnout | **High** | **Critical** | Phased delivery; automate everything; dependabot; trusted publisher; no manual release steps. **Don't add manual steps to the release flow without strong justification.** |
+| Generated client is huge / slow imports | Low | Medium | Lazy-import per command; `dd --version` startup benchmarked. |
+
 ## Package layout
 
 ### Why a typed, vendored, generated API client
@@ -53,13 +121,13 @@ If you find yourself confused by a design choice, check here first; if it's not 
 
 **Original choice**: `defectdojo-cli`.
 
-**Reality**: the PyPI name `defectdojo-cli` is taken by an unrelated project ([fopina/defectdojo-api-generated](https://pypi.org/project/defectdojo-cli/)). Locked in `PLAN.md` D10 without checking PyPI availability.
+**Reality**: the PyPI name `defectdojo-cli` is taken by an unrelated project ([fopina/defectdojo-api-generated](https://pypi.org/project/defectdojo-cli/)). Locked in as decision **D10** without checking PyPI availability.
 
 **Pivot**: `dd-cli`. Matches the binary name (`dd`), matches the GitHub repo (`OsamaMahmood/dd-cli`), available on PyPI, short enough for CI scripts.
 
 The pyproject.toml `name` was changed during M5a (PR #12) when PyPI publishing was being wired up. Tests, docs, README, and the install instructions were updated in the same PR.
 
-**Lesson for future package names**: check PyPI availability before locking the name into PLAN.md.
+**Lesson for future package names**: check PyPI availability before committing to one in design docs.
 
 ### Docker Hub namespace: `m4rkm3n/dd-cli`
 
@@ -144,13 +212,9 @@ Compat tests (`tests/compat/test_legacy_entry_points.py`) assert the strings exp
 
 ### Why we dropped the `dd-import` shim package
 
-**Original plan** (PLAN.md M5): publish a final `dd-import==X.Y.Z` to PyPI as a meta-package that depends on `dd-cli`, so `pip install dd-import` keeps working.
+**Original plan** (M5): publish a final `dd-import==X.Y.Z` to PyPI as a meta-package that depends on `dd-cli`, so `pip install dd-import` keeps working.
 
 **Why dropped**: the legacy console scripts (`dd-reimport-findings`, `dd-import-languages`) ship inside `dd-cli` itself via `pyproject.toml [project.scripts]`. A user migrating from `dd-import` just does `pip install dd-cli` instead — same binaries on PATH, same `DD_*` env vars honored. The shim package was unnecessary indirection.
-
-PLAN.md §8 M5 reflects this:
-
-> ~~`dd-import` shim package~~ — superseded by the in-repo `dd-reimport-findings` / `dd-import-languages` console scripts.
 
 If someone files an issue asking for the shim, the answer is "you already have it — `pip install dd-cli`".
 
@@ -158,7 +222,7 @@ If someone files an issue asking for the shim, the answer is "you already have i
 
 ### Why no Homebrew tap (yet)
 
-**Choice**: PLAN.md §14 lists `homebrew-tap` repo + `dd-cli` formula as deferred post-v2.0.
+**Choice**: a `homebrew-tap` repo with a `dd-cli` formula was originally planned for M5 (see D16) but deferred post-v2.0.
 
 **Why**:
 - Most likely install path is `pip install dd-cli` or `pipx install dd-cli` — they're zero-friction for the Python and CI/CD audience.
@@ -183,7 +247,7 @@ The `RELEASING.md "What the workflow does NOT do yet"` section calls this out.
 **Choice**: `pytest --cov=dd_cli` runs by default and writes `coverage.xml`, but no threshold is enforced.
 
 **Why**:
-- PLAN.md §9 specifies ≥85% as an aspirational target.
+- The original project target was ≥85% (aspirational).
 - The repo is at ~88% as of v2.0.
 - A hard gate would block PRs on regression noise (e.g. a one-line bug fix that doesn't touch a hot path). codecov's patch check would help with this but adds another third-party dependency.
 
@@ -257,7 +321,7 @@ A few patterns that come up often enough they're worth naming:
 - **Write down the legacy contract as tests, not docs.** The compat suite has caught regressions that doc-only enforcement would have missed.
 - **Single source of truth for versions.** hatch-vcs over a manual `version = "..."` field has been net-positive — no forgotten bumps.
 - **Tag from main, with a guard.** The v0.4.0 empty-changelog incident is the canonical example of how stale-branch tags fail silently.
-- **Don't add a step to the release process without strong justification.** The maintainer is solo; release automation is the burnout-mitigation mentioned in PLAN.md §13.
+- **Don't add a step to the release process without strong justification.** The maintainer is solo; release automation is the burnout-mitigation explicitly tracked in the risk register above.
 
 ## When you find a new gotcha
 

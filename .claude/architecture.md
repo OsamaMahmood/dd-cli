@@ -363,7 +363,7 @@ A 401 anywhere in step 7 raises `AuthError`, propagates to `main()`, prints the 
 | Add an action verb on an existing resource | New `@<resource>_app.command(...)` using `_resource.py` helpers; see [workflows.md](workflows.md). |
 | Add a new HTTP method or retry policy | Edit `client.py`. Cross-cuts every command, so add tests in `tests/test_client.py`. |
 | Add a new output format (TOML, CSV, etc.) | New `Renderer` in `output/`, register in `render()`. Update `OutputFormat` enum. |
-| Add a new error type | New `DDCliError` subclass in `errors.py` with a fresh exit code. Update `from_status_code` if HTTP-derived. Update PLAN.md §5 exit-code table. |
+| Add a new error type | New `DDCliError` subclass in `errors.py` with a fresh exit code. Update `from_status_code` if HTTP-derived. Update the exit-code table in [.claude/domain.md](domain.md#exit-codes). |
 | Add a new import knob (DD ships a flag on `/reimport-scan/`) | Field on `ImportFindingsOptions` with `validation_alias=AliasChoices("DD_CLI_*", "DD_*")`. CLI flag in `cli/import_cmd.py`. Compat test if it's a legacy var. |
 | Add a config layer (e.g., a system-wide config in `/etc`) | Edit `config/paths.py` + `load_config`. Maintain the precedence order documented in [conventions.md](conventions.md). |
 

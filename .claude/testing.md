@@ -332,7 +332,7 @@ branch = true
 omit = ["*/dd_cli/_client/*", "*/tests/*"]
 ```
 
-`coverage.xml` is written to the repo root after every test run (gitignored). CI uploads it as a workflow artifact (`coverage-xml`) on the Python 3.12 matrix slot only. **No coverage gate is currently enforced** — there's no `codecov.yml`, no `--cov-fail-under` in `addopts`. PLAN.md §9 specifies ≥85% but it's advisory today.
+`coverage.xml` is written to the repo root after every test run (gitignored). CI uploads it as a workflow artifact (`coverage-xml`) on the Python 3.12 matrix slot only. **No coverage gate is currently enforced** — there's no `codecov.yml`, no `--cov-fail-under` in `addopts`. The project target is ≥85% (see [.claude/decisions.md](decisions.md#why-no-coverage-gate)) but it's advisory today.
 
 If you want to gate locally:
 
