@@ -20,6 +20,7 @@ from dd_cli.cli.metadata import metadata_app
 from dd_cli.cli.ping import ping
 from dd_cli.cli.product_types import product_types_app
 from dd_cli.cli.products import products_app
+from dd_cli.cli.report import report_app
 from dd_cli.cli.risk_acceptances import risk_acceptances_app
 from dd_cli.cli.tests_cmd import tests_app
 from dd_cli.cli.users import users_app
@@ -53,6 +54,7 @@ app.add_typer(metadata_app)
 app.add_typer(endpoints_app)
 app.add_typer(finding_templates_app)
 app.add_typer(import_app)
+app.add_typer(report_app)
 app.command("configure", help="Interactively create or update a profile.")(configure)
 app.command("ping", help="Verify connectivity and authentication against DefectDojo.")(ping)
 
