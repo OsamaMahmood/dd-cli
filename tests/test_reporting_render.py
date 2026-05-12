@@ -12,11 +12,12 @@ from typing import Any
 import pytest
 
 from dd_cli.reporting.context import build_context
-from dd_cli.reporting.render import render_markdown
+from dd_cli.reporting.render import render_html, render_markdown
 
-# `generated_at` is a UTC timestamp baked at build time — strip it so
-# the snapshot stays stable across runs.
-_GENERATED_AT_RE = re.compile(r"\*\*Generated:\*\* .+? UTC")
+# `generated_at` is a UTC timestamp baked at build time — strip it from
+# both Markdown (`**Generated:** ...`) and HTML (`<strong>Generated:</strong> ...`)
+# so the snapshot stays stable across runs.
+_GENERATED_AT_RE = re.compile(r"(\*\*Generated:\*\*|<strong>Generated:</strong>)\s.+? UTC")
 
 
 @pytest.fixture
@@ -114,7 +115,7 @@ def fixture_context() -> dict[str, Any]:
 
 def _stable(text: str) -> str:
     """Strip the generated-at timestamp so snapshot diffs only show real changes."""
-    return _GENERATED_AT_RE.sub("**Generated:** <stamp>", text)
+    return _GENERATED_AT_RE.sub(r"\1 <stamp>", text)
 
 
 def test_render_markdown_returns_a_non_empty_string(fixture_context: dict[str, Any]) -> None:
@@ -149,3 +150,38 @@ def test_render_markdown_renders_empty_test_message(fixture_context: dict[str, A
 def test_render_markdown_snapshot(fixture_context: dict[str, Any], snapshot: object) -> None:
     """Pin the full rendered Markdown so future template tweaks show up in the diff."""
     assert _stable(render_markdown(fixture_context)) == snapshot
+
+
+# ---------------------------- HTML rendering ------------------------------- #
+
+
+def test_render_html_returns_a_non_empty_string(fixture_context: dict[str, Any]) -> None:
+    out = render_html(fixture_context)
+    assert isinstance(out, str)
+    assert len(out) > 500  # template is large; less than this means something broke
+
+
+def test_render_html_is_a_full_document(fixture_context: dict[str, Any]) -> None:
+    """Self-contained HTML — the user opens it in a browser, no external assets."""
+    out = render_html(fixture_context)
+    assert "<!DOCTYPE html>" in out or "<!doctype html>" in out.lower()
+    assert "<html" in out.lower()
+    assert "</html>" in out.lower()
+    assert "<style" in out.lower()  # CSS is inlined; no external stylesheet
+
+
+def test_render_html_includes_product_name(fixture_context: dict[str, Any]) -> None:
+    out = render_html(fixture_context)
+    assert "Payments" in out
+
+
+def test_render_html_renders_kev_badge(fixture_context: dict[str, Any]) -> None:
+    out = render_html(fixture_context)
+    # The KEV finding should produce a visible badge/marker; the exact CSS
+    # class name is template-internal, but "KEV" must appear in the output.
+    assert "KEV" in out
+
+
+def test_render_html_snapshot(fixture_context: dict[str, Any], snapshot: object) -> None:
+    """Pin the full rendered HTML so template tweaks show up in the diff."""
+    assert _stable(render_html(fixture_context)) == snapshot

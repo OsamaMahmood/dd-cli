@@ -1,8 +1,9 @@
-"""CLI-level tests for `dd report` (M6a — Markdown only).
+"""CLI-level tests for `dd report generate`.
 
 These mock the full endpoint chain (`products` → `engagements` → `tests`
-→ `findings` → ancillary lookups) and assert the on-disk Markdown ends
-up where it should with the right contents.
+→ `findings` → ancillary lookups) and assert the on-disk reports end up
+where they should with the right contents. The `--detailed`,
+`--with-history`, and `--sample` paths get their own test groups below.
 """
 
 from __future__ import annotations
@@ -220,7 +221,99 @@ def test_report_with_test_filter_that_matches_nothing_errors(
     assert re.search(r"no tests matched filter", result.exception.message.lower())
 
 
-def test_report_m6b_flags_rejected_for_now(runner: CliRunner, tmp_path: Path) -> None:
+# ---------------------------- --format ------------------------------------ #
+
+
+def test_report_default_format_writes_md_and_html(
+    runner: CliRunner, httpx_mock: HTTPXMock, tmp_path: Path
+) -> None:
+    _mock_one_product_one_engagement_one_test(httpx_mock)
+    out_dir = tmp_path / "reports"
+
+    result = runner.invoke(
+        app, ["report", "generate", "--product", "42", "--output-dir", str(out_dir)]
+    )
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "42-payments.md").exists()
+    assert (out_dir / "42-payments.html").exists()
+
+
+def test_report_format_html_writes_html_only(
+    runner: CliRunner, httpx_mock: HTTPXMock, tmp_path: Path
+) -> None:
+    _mock_one_product_one_engagement_one_test(httpx_mock)
+    out_dir = tmp_path / "reports"
+
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--product",
+            "42",
+            "--output-dir",
+            str(out_dir),
+            "--format",
+            "html",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "42-payments.html").exists()
+    assert not (out_dir / "42-payments.md").exists()
+
+
+def test_report_format_md_writes_md_only(
+    runner: CliRunner, httpx_mock: HTTPXMock, tmp_path: Path
+) -> None:
+    _mock_one_product_one_engagement_one_test(httpx_mock)
+    out_dir = tmp_path / "reports"
+
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--product",
+            "42",
+            "--output-dir",
+            str(out_dir),
+            "--format",
+            "md",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "42-payments.md").exists()
+    assert not (out_dir / "42-payments.html").exists()
+
+
+# ---------------------------- --detailed ---------------------------------- #
+
+
+def test_report_detailed_fetches_notes_jira_endpoint_status(
+    runner: CliRunner, httpx_mock: HTTPXMock, tmp_path: Path
+) -> None:
+    _mock_one_product_one_engagement_one_test(httpx_mock)
+    # The single finding (id=1) triggers 3 extra fan-out reads under --detailed.
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/findings/1/notes/",
+        json={
+            "results": [
+                {"id": 5, "entry": "Triage: investigated", "date": "2026-04-22"},
+            ]
+        },
+    )
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/jira_finding_mappings/?finding=1",
+        json={
+            "next": None,
+            "results": [{"id": 1, "jira_key": "SEC-100", "url": "https://jira/SEC-100"}],
+        },
+    )
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/endpoint_status/?finding=1",
+        json={"next": None, "results": [{"id": 1, "endpoint": "https://x.example/login"}]},
+    )
+
     result = runner.invoke(
         app,
         [
@@ -231,11 +324,148 @@ def test_report_m6b_flags_rejected_for_now(runner: CliRunner, tmp_path: Path) ->
             "--output-dir",
             str(tmp_path / "r"),
             "--detailed",
+            "--format",
+            "md",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    body = (tmp_path / "r" / "42-payments.md").read_text()
+    # The detailed sections in the template render Jira keys and endpoint blocks.
+    assert "SEC-100" in body
+    assert "https://x.example/login" in body
+    assert "Triage: investigated" in body
+
+
+# ---------------------------- --with-history ------------------------------ #
+
+
+def test_report_with_history_fetches_test_imports(
+    runner: CliRunner, httpx_mock: HTTPXMock, tmp_path: Path
+) -> None:
+    _mock_one_product_one_engagement_one_test(httpx_mock)
+    httpx_mock.add_response(
+        url="https://dd.example/api/v2/test_imports/?test=10",
+        json={
+            "next": None,
+            "results": [
+                {
+                    "id": 1,
+                    "created": "2026-04-20T00:00:00Z",
+                    "build_id": "ci-1842",
+                    "commit_hash": "abc1234",
+                    "branch_tag": "main",
+                    "test_import_finding_action_set": [
+                        {"action": "Created"},
+                        {"action": "Untouched"},
+                    ],
+                },
+            ],
+        },
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--product",
+            "42",
+            "--output-dir",
+            str(tmp_path / "r"),
+            "--with-history",
+            "--format",
+            "md",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    body = (tmp_path / "r" / "42-payments.md").read_text()
+    assert "Scan delta" in body
+    assert "ci-1842" in body or "abc1234" in body or "main" in body
+
+
+# ---------------------------- --sample ------------------------------------- #
+
+
+def test_report_sample_renders_without_api(runner: CliRunner, tmp_path: Path) -> None:
+    """--sample skips the API entirely; httpx_mock would fail on any request."""
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--sample",
+            "--output-dir",
+            str(tmp_path / "r"),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    out_dir = tmp_path / "r"
+    assert (out_dir / "sample-report.md").exists()
+    assert (out_dir / "sample-report.html").exists()
+    md = (out_dir / "sample-report.md").read_text()
+    assert "sample-app" in md  # the bundled product fixture's name
+
+
+def test_report_sample_honours_test_filter(runner: CliRunner, tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--sample",
+            "--output-dir",
+            str(tmp_path / "r"),
+            "--test",
+            "SAST",
+            "--format",
+            "md",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    files = list((tmp_path / "r").glob("*.md"))
+    assert len(files) == 1
+    assert "sast" in files[0].name.lower()
+
+
+def test_report_sample_no_match_errors(runner: CliRunner, tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--sample",
+            "--output-dir",
+            str(tmp_path / "r"),
+            "--test",
+            "no-such-scanner",
         ],
     )
     assert result.exit_code != 0
     assert isinstance(result.exception, ValidationError)
-    assert "M6b" in result.exception.message
+    assert "No sample tests matched" in result.exception.message
+
+
+def test_report_sample_with_detailed_and_history(runner: CliRunner, tmp_path: Path) -> None:
+    """--detailed + --with-history with --sample exercise the fixture loaders for those fields."""
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            "generate",
+            "--sample",
+            "--detailed",
+            "--with-history",
+            "--output-dir",
+            str(tmp_path / "r"),
+            "--format",
+            "md",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    body = (tmp_path / "r" / "sample-report.md").read_text()
+    # The bundled fixtures include at least one finding with notes and one
+    # with a scan-delta block; both should appear when both flags are on.
+    assert "Scan delta" in body
 
 
 # ---------------------------- typed errors --------------------------------- #

@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Security Report — {{ product.name }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+    @top-left {
+      content: "{{ product.name }} — Security Report";
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #666;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #666;
+    }
+  }
+
+  html { -weasy-print-color-adjust: exact; }
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #1f2937;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+  h1, h2, h3, h4 { color: #0f172a; margin-top: 0; }
+  h1 { font-size: 26pt; margin-bottom: 4pt; }
+  h2 { font-size: 18pt; border-bottom: 2px solid #0f172a; padding-bottom: 4pt; margin-top: 18pt; }
+  h3 { font-size: 14pt; margin-top: 14pt; color: #1e3a8a; }
+  h4 { font-size: 11pt; margin-top: 10pt; }
+
+  p { margin: 4pt 0; }
+  ul, ol { margin: 4pt 0 4pt 16pt; padding: 0; }
+  ul li, ol li { margin: 1pt 0; }
+
+  .cover {
+    text-align: left;
+    padding: 30pt 0;
+    border-bottom: 4px solid #0f172a;
+    margin-bottom: 18pt;
+  }
+  .cover .meta { color: #64748b; font-size: 10pt; margin-top: 10pt; }
+  .cover .meta div { margin: 2pt 0; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6pt;
+    margin: 12pt 0 18pt;
+  }
+  .summary-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8pt 10pt;
+    border-radius: 4pt;
+  }
+  .summary-card .label { font-size: 7pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.4pt; line-height: 1.2; }
+  .summary-card .sub { font-size: 7pt; color: #64748b; margin-top: 2pt; }
+  .summary-card .value { font-size: 18pt; font-weight: 700; color: #0f172a; line-height: 1.1; margin-top: 2pt; }
+  .summary-card.alert {
+    border-color: #fecaca;
+    background: #fef2f2;
+  }
+  .summary-card.alert .value { color: #991b1b; }
+  .summary-card.alert .label { color: #991b1b; }
+
+  .severity-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6pt;
+    margin: 8pt 0 18pt;
+  }
+  .sev-card {
+    padding: 8pt;
+    border-radius: 4pt;
+    text-align: center;
+    color: #fff;
+  }
+  .sev-card .n { font-size: 16pt; font-weight: 700; display: block; }
+  .sev-card .l { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5pt; }
+  .sev-Critical { background: #991b1b; }
+  .sev-High { background: #dc2626; }
+  .sev-Medium { background: #d97706; }
+  .sev-Low { background: #2563eb; }
+  .sev-Info { background: #475569; }
+
+  .chip {
+    display: inline-block;
+    padding: 2pt 8pt;
+    border-radius: 10pt;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+  }
+  .chip.Critical { background: #991b1b; }
+  .chip.High { background: #dc2626; }
+  .chip.Medium { background: #d97706; }
+  .chip.Low { background: #2563eb; }
+  .chip.Info { background: #475569; }
+
+  .badge {
+    display: inline-block;
+    padding: 1pt 6pt;
+    border-radius: 3pt;
+    font-size: 7.5pt;
+    font-weight: 700;
+    margin-right: 4pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+  }
+  .badge-kev { background: #7c2d12; color: #fef3c7; }
+  .badge-epss { background: #0f172a; color: #fef3c7; }
+  .badge-fix { background: #166534; color: #fff; }
+  .badge-exploited { background: #991b1b; color: #fff; }
+
+  .sla-ok { background: #dcfce7; color: #166534; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+  .sla-warn { background: #fef3c7; color: #92400e; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+  .sla-breach { background: #fee2e2; color: #991b1b; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+  .sla-none { background: #f1f5f9; color: #64748b; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+
+  .engagement {
+    page-break-before: always;
+  }
+  .engagement:first-of-type { page-break-before: avoid; }
+
+  .engagement-meta, .test-meta {
+    background: #f1f5f9;
+    border-left: 3px solid #1e3a8a;
+    padding: 8pt 12pt;
+    margin: 6pt 0 10pt;
+    font-size: 9pt;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2pt 18pt;
+  }
+  .engagement-meta div, .test-meta div { margin: 0; }
+  .engagement-meta strong, .test-meta strong {
+    color: #475569;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+    font-weight: 700;
+    margin-right: 6pt;
+  }
+
+  .test {
+    margin-top: 18pt;
+    page-break-inside: avoid;
+  }
+  .empty-test {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    padding: 10pt;
+    border-radius: 4pt;
+    font-style: italic;
+  }
+
+  .finding {
+    margin-top: 12pt;
+    border: 1px solid #e2e8f0;
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    page-break-inside: avoid;
+  }
+  .finding h4 {
+    display: flex;
+    align-items: center;
+    gap: 8pt;
+    margin: 0 0 6pt;
+  }
+  .finding-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3pt 18pt;
+    font-size: 9pt;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 3pt;
+    padding: 8pt 12pt;
+    margin: 8pt 0 10pt;
+  }
+  .finding-meta .row { display: flex; gap: 8pt; align-items: baseline; min-width: 0; }
+  .finding-meta .k {
+    color: #64748b;
+    font-weight: 700;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+    min-width: 78pt;
+    flex-shrink: 0;
+    padding-top: 1pt;
+  }
+  .finding-meta .v {
+    color: #1f2937;
+    flex: 1;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .finding-meta .v code {
+    font-size: 8.5pt;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+  }
+  .finding-section {
+    margin-top: 8pt;
+  }
+  .finding-section .label {
+    font-weight: 700;
+    font-size: 9pt;
+    color: #0f172a;
+    margin-bottom: 2pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+  }
+  .finding-section .body {
+    font-size: 9.5pt;
+  }
+  .finding-section .body p { margin: 4pt 0; }
+  .finding-section .body code {
+    font-family: 'Menlo', monospace;
+    background: #f1f5f9;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-size: 8.5pt;
+  }
+  .finding-section .body pre {
+    background: #0f172a;
+    color: #f1f5f9;
+    padding: 6pt 8pt;
+    border-radius: 3pt;
+    font-size: 8.5pt;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+  .finding-section .body pre code { background: transparent; padding: 0; color: inherit; }
+
+  code, .mono {
+    font-family: 'Menlo', 'Courier New', monospace;
+    font-size: 9pt;
+    background: #f1f5f9;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+  }
+  .tags { font-size: 8pt; color: #64748b; margin-top: 6pt; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0; }
+  th, td { text-align: left; padding: 4pt 8pt; border-bottom: 1px solid #e2e8f0; font-size: 9pt; vertical-align: top; }
+  th { background: #f8fafc; font-weight: 700; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; break-inside: avoid; }
+
+  .top-risk-table td.title { max-width: 240pt; }
+  .top-risk-table .rank { width: 18pt; color: #64748b; font-weight: 700; }
+  .top-risk-table tr, .top-risk-table thead { page-break-inside: avoid; }
+  .top-risk-table thead { display: table-header-group; }
+  .top-risk-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: 110pt 1fr;
+    gap: 4pt 10pt;
+    font-size: 9pt;
+    margin-top: 4pt;
+  }
+  .evidence-grid .k { color: #64748b; font-weight: 700; }
+  .evidence-grid .v { font-family: 'Menlo', monospace; font-size: 8.5pt; word-break: break-all; }
+
+  .delta-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 6pt 0; }
+  .delta-card { padding: 6pt 8pt; border-radius: 3pt; text-align: center; font-size: 9pt; }
+  .delta-created { background: #fee2e2; color: #991b1b; }
+  .delta-reactivated { background: #fef3c7; color: #92400e; }
+  .delta-closed { background: #dcfce7; color: #166534; }
+  .delta-untouched { background: #f1f5f9; color: #475569; }
+  .delta-card .n { display: block; font-size: 13pt; font-weight: 700; }
+  .delta-card .l { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.4pt; }
+
+  .ra-card {
+    border: 1px solid #fef3c7;
+    background: #fffbeb;
+    border-left: 4px solid #d97706;
+    padding: 10pt 12pt;
+    margin: 10pt 0;
+    border-radius: 3pt;
+    page-break-inside: avoid;
+  }
+  .ra-card h4 { margin: 0 0 4pt; color: #92400e; }
+  .ra-meta { font-size: 8.5pt; color: #78350f; margin-bottom: 6pt; }
+  .ra-meta span { margin-right: 10pt; }
+
+  .notes-block { background: #f8fafc; border-left: 3px solid #64748b; padding: 6pt 10pt; margin-top: 8pt; font-size: 9pt; }
+  .notes-block .note { padding: 3pt 0; border-bottom: 1px dashed #e2e8f0; }
+  .notes-block .note:last-child { border-bottom: none; }
+  .notes-block .author { font-weight: 700; color: #1e3a8a; }
+  .notes-block .date { color: #64748b; font-size: 8pt; }
+
+  .jira-row { background: #eff6ff; border-left: 3px solid #1d4ed8; padding: 6pt 10pt; margin-top: 8pt; font-size: 9pt; }
+  .jira-row a { color: #1d4ed8; text-decoration: none; font-weight: 700; }
+
+  .endpoint-table { font-size: 8.5pt; margin-top: 6pt; }
+  .endpoint-table th, .endpoint-table td { padding: 3pt 6pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Security Report</h1>
+  <div style="font-size: 14pt; color: #334155;">{{ product.name }}</div>
+  <div class="meta">
+    <div><strong>Generated:</strong> {{ generated_at }}</div>
+    <div><strong>Source:</strong> {{ dd_url }}</div>
+    <div><strong>Product ID:</strong> {{ product.id }}</div>
+    {% if product.business_criticality %}<div><strong>Business criticality:</strong> {{ product.business_criticality }}</div>{% endif %}
+    {% if product.platform %}<div><strong>Platform:</strong> {{ product.platform }}</div>{% endif %}
+    {% if product.lifecycle %}<div><strong>Lifecycle:</strong> {{ product.lifecycle }}</div>{% endif %}
+    {% if product.prod_numeric_grade is not none %}<div><strong>Numeric grade:</strong> {{ product.prod_numeric_grade }}</div>{% endif %}
+    {% if test_filters %}<div><strong>Test filter:</strong> {{ test_filters | join(", ") }} <em>(only matching tests included)</em></div>{% endif %}
+    {% if sla_configurations %}
+      {% set sla = sla_configurations[0] %}
+      <div><strong>SLA thresholds:</strong>
+        Critical {{ sla.critical or "—" }}d ·
+        High {{ sla.high or "—" }}d ·
+        Medium {{ sla.medium or "—" }}d ·
+        Low {{ sla.low or "—" }}d
+        {% if sla.name %}<em>({{ sla.name }})</em>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if product.description %}
+<h2>Product description</h2>
+<div>{{ product.description | md }}</div>
+{% endif %}
+
+<h2>Executive summary</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Active engagements</div>
+    <div class="value">{{ totals.engagements }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Tests</div>
+    <div class="value">{{ totals.tests }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Active findings</div>
+    <div class="value">{{ totals.findings }}</div>
+  </div>
+  <div class="summary-card{% if totals.sla_breach %} alert{% endif %}">
+    <div class="label">SLA breached</div>
+    <div class="value">{{ totals.sla_breach }}</div>
+    <div class="sub">past due date</div>
+  </div>
+  <div class="summary-card{% if totals.kev %} alert{% endif %}">
+    <div class="label">KEV</div>
+    <div class="value">{{ totals.kev }}</div>
+    <div class="sub">known exploited</div>
+  </div>
+</div>
+
+{% if totals.risk_accepted %}
+<p style="margin: -8pt 0 12pt; font-size: 9pt; color: #92400e;">
+  <strong>{{ totals.risk_accepted }}</strong> finding(s) currently risk-accepted (excluded from active counts above — see Risk acceptance section).
+</p>
+{% endif %}
+
+<div class="severity-row">
+  <div class="sev-card sev-Critical"><span class="n">{{ totals.severity.Critical }}</span><span class="l">Critical</span></div>
+  <div class="sev-card sev-High"><span class="n">{{ totals.severity.High }}</span><span class="l">High</span></div>
+  <div class="sev-card sev-Medium"><span class="n">{{ totals.severity.Medium }}</span><span class="l">Medium</span></div>
+  <div class="sev-card sev-Low"><span class="n">{{ totals.severity.Low }}</span><span class="l">Low</span></div>
+  <div class="sev-card sev-Info"><span class="n">{{ totals.severity.Info }}</span><span class="l">Info</span></div>
+</div>
+
+{% if top_risk %}
+<h3>Top {{ top_risk | length }} riskiest findings</h3>
+<p style="font-size: 9pt; color: #64748b; margin-top: 0;">
+Ranked by severity, then KEV exposure, then EPSS, then age.
+</p>
+<table class="top-risk-table">
+  <thead>
+    <tr>
+      <th class="rank">#</th>
+      <th>Finding</th>
+      <th>Severity</th>
+      <th>SLA</th>
+      <th>EPSS</th>
+      <th>Age</th>
+      <th>Engagement / Test</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for f in top_risk %}
+    <tr>
+      <td class="rank">{{ loop.index }}</td>
+      <td class="title">
+        {{ f.title }}
+        {% if f.known_exploited %}<span class="badge badge-kev">KEV</span>{% endif %}
+        {% if f.fix_available %}<span class="badge badge-fix">Fix</span>{% endif %}
+      </td>
+      <td><span class="chip {{ f.severity }}">{{ f.severity }}</span></td>
+      <td><span class="{{ f.sla.css }}">{{ f.sla.label }}</span></td>
+      <td>{% if f.epss_pct is not none %}{{ f.epss_pct }}%{% else %}—{% endif %}</td>
+      <td>{% if f.age %}{{ f.age }}d{% else %}—{% endif %}</td>
+      <td style="font-size: 8.5pt;">{{ f._engagement_name }}<br><span style="color: #64748b;">{{ f._test_name }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if totals.findings %}
+<h3>Finding age distribution</h3>
+<table>
+  <thead>
+    <tr><th>Age bucket</th><th>Total</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th><th>Info</th></tr>
+  </thead>
+  <tbody>
+    {% for bucket in aging %}
+    <tr>
+      <td><strong>{{ bucket.label }}</strong></td>
+      <td>{{ bucket.total }}</td>
+      <td>{{ bucket.severity.Critical }}</td>
+      <td>{{ bucket.severity.High }}</td>
+      <td>{{ bucket.severity.Medium }}</td>
+      <td>{{ bucket.severity.Low }}</td>
+      <td>{{ bucket.severity.Info }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if risk_acceptances %}
+<h2>Risk acceptance</h2>
+<p style="font-size: 9pt; color: #64748b;">
+Findings below are formally risk-accepted and excluded from the active findings counts.
+</p>
+{% for ra in risk_acceptances %}
+<div class="ra-card">
+  <h4>{{ ra.name }}</h4>
+  <div class="ra-meta">
+    <span><strong>Decision:</strong> {{ ra.decision }}</span>
+    {% if ra.accepted_by %}<span><strong>Accepted by:</strong> {{ ra.accepted_by }}</span>{% endif %}
+    {% if ra.expiration_date %}<span><strong>Expires:</strong> {{ ra.expiration_date | fmt_date }}</span>{% endif %}
+    {% if ra.created %}<span><strong>Created:</strong> {{ ra.created | fmt_date }}</span>{% endif %}
+    <span><strong>Findings:</strong> {{ ra.finding_count }}</span>
+  </div>
+  {% if ra.decision_details %}<div style="font-size: 9pt; margin-bottom: 6pt;">{{ ra.decision_details | md }}</div>{% endif %}
+  {% if ra.findings %}
+  <table>
+    <thead><tr><th>Severity</th><th>Title</th><th>Engagement / Test</th></tr></thead>
+    <tbody>
+      {% for item in ra.findings %}
+      <tr>
+        <td><span class="chip {{ item.severity }}">{{ item.severity }}</span></td>
+        <td>{{ item.title }}</td>
+        <td style="font-size: 8.5pt; color: #64748b;">{{ item._engagement_name }} / {{ item._test_name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{% if not engagements %}
+<p><em>No active engagements were found for this product.</em></p>
+{% endif %}
+
+{% for eng in engagements %}
+<div class="engagement">
+  <h2>Engagement: {{ eng.name }}</h2>
+  <div class="engagement-meta">
+    <div><strong>Status:</strong> {{ eng.status or "—" }}</div>
+    {% if eng.version %}<div><strong>Version:</strong> {{ eng.version }}</div>{% endif %}
+    <div><strong>Window:</strong> {{ eng.target_start | fmt_date }} → {{ eng.target_end | fmt_date }}</div>
+    {% if eng.branch_tag %}<div><strong>Branch/Tag:</strong> {{ eng.branch_tag }}</div>{% endif %}
+    {% if eng.commit_hash %}<div><strong>Commit:</strong> <code>{{ eng.commit_hash }}</code></div>{% endif %}
+    {% if eng.build_id %}<div><strong>Build:</strong> {{ eng.build_id }}</div>{% endif %}
+    <div><strong>Tests:</strong> {{ eng.test_count }}</div>
+  </div>
+  {% if eng.description %}<div>{{ eng.description | md }}</div>{% endif %}
+
+  {% for test in eng.tests %}
+  <div class="test">
+    <h3>{{ test.test_type_name }}{% if test.title and test.title != test.test_type_name %} — {{ test.title }}{% endif %}</h3>
+    <div class="test-meta">
+      {% if test.scan_type %}<div><strong>Scan type:</strong> {{ test.scan_type }}</div>{% endif %}
+      <div><strong>Window:</strong> {{ test.target_start | fmt_date }} → {{ test.target_end | fmt_date }}</div>
+      {% if test.branch_tag %}<div><strong>Branch/Tag:</strong> {{ test.branch_tag }}</div>{% endif %}
+      {% if test.commit_hash %}<div><strong>Commit:</strong> <code>{{ test.commit_hash }}</code></div>{% endif %}
+      <div><strong>Active findings:</strong> {{ test.finding_count }}</div>
+    </div>
+
+    {% if test.scan_delta %}
+    <div style="margin-top: 6pt;">
+      <div style="font-size: 8.5pt; color: #64748b; margin-bottom: 2pt;">
+        <strong>Latest scan:</strong>
+        {{ test.scan_delta.latest_at | fmt_date }}
+        {% if test.scan_delta.latest_branch %} · branch <code>{{ test.scan_delta.latest_branch }}</code>{% endif %}
+        {% if test.scan_delta.latest_commit %} · <code>{{ test.scan_delta.latest_commit[:8] }}</code>{% endif %}
+        {% if test.scan_delta.latest_build %} · build {{ test.scan_delta.latest_build }}{% endif %}
+        · {{ test.scan_delta.total_imports }} import(s) total
+      </div>
+      <div class="delta-row">
+        <div class="delta-card delta-created"><span class="n">{{ test.scan_delta.created }}</span><span class="l">New</span></div>
+        <div class="delta-card delta-reactivated"><span class="n">{{ test.scan_delta.reactivated }}</span><span class="l">Reactivated</span></div>
+        <div class="delta-card delta-closed"><span class="n">{{ test.scan_delta.closed }}</span><span class="l">Closed</span></div>
+        <div class="delta-card delta-untouched"><span class="n">{{ test.scan_delta.untouched }}</span><span class="l">Untouched</span></div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if test.finding_count == 0 %}
+    <div class="empty-test">No active findings were identified for this test.</div>
+    {% else %}
+      {% for f in test.findings %}
+      <div class="finding">
+        <h4>
+          <span class="chip {{ f.severity }}">{{ f.severity }}</span>
+          {{ f.title }}
+          {% if f.known_exploited %}<span class="badge badge-kev">KEV</span>{% endif %}
+          {% if f.fix_available %}<span class="badge badge-fix">Fix available</span>{% endif %}
+        </h4>
+        <div class="finding-meta">
+          <div class="row"><span class="k">Severity</span><span class="v">{{ f.severity }}{% if f.numerical_severity %} ({{ f.numerical_severity }}){% endif %}</span></div>
+          <div class="row"><span class="k">SLA</span><span class="v"><span class="{{ f.sla.css }}">{{ f.sla.label }}</span></span></div>
+          {% if f.age is not none %}
+          <div class="row"><span class="k">Age</span><span class="v">{{ f.age }} day{{ "s" if f.age != 1 else "" }}</span></div>
+          {% endif %}
+          <div class="row"><span class="k">Discovered</span><span class="v">{{ f.date | fmt_date }}</span></div>
+          {% if f.cwe %}
+          <div class="row"><span class="k">CWE</span><span class="v">CWE-{{ f.cwe }}</span></div>
+          {% endif %}
+          {% if f.cve %}
+          <div class="row"><span class="k">CVE</span><span class="v">{{ f.cve }}</span></div>
+          {% endif %}
+          {% if f.cvssv3_score is not none %}
+          <div class="row"><span class="k">CVSSv3</span><span class="v">{{ f.cvssv3_score }}</span></div>
+          {% endif %}
+          {% if f.cvssv4_score is not none %}
+          <div class="row"><span class="k">CVSSv4</span><span class="v">{{ f.cvssv4_score }}</span></div>
+          {% endif %}
+          {% if f.epss_pct is not none %}
+          <div class="row"><span class="k">EPSS</span><span class="v">{{ f.epss_pct }}%{% if f.epss_percentile_pct is not none %} (p{{ f.epss_percentile_pct }}){% endif %}</span></div>
+          {% endif %}
+          {% if f.scanner_confidence is not none %}
+          <div class="row"><span class="k">Confidence</span><span class="v">{{ f.scanner_confidence }}</span></div>
+          {% endif %}
+          {% if f.file_path %}
+          <div class="row"><span class="k">File</span><span class="v"><code>{{ f.file_path }}{% if f.line %}:{{ f.line }}{% endif %}</code></span></div>
+          {% endif %}
+          {% if f.component_name %}
+          <div class="row"><span class="k">Component</span><span class="v">{{ f.component_name }}{% if f.component_version %} @ {{ f.component_version }}{% endif %}</span></div>
+          {% endif %}
+          {% if f.service %}
+          <div class="row"><span class="k">Service</span><span class="v">{{ f.service }}</span></div>
+          {% endif %}
+          {% if f.endpoint_count %}
+          <div class="row"><span class="k">Endpoints</span><span class="v">{{ f.endpoint_count }}</span></div>
+          {% endif %}
+          {% if f.last_reviewed %}
+          <div class="row"><span class="k">Last reviewed</span><span class="v">{{ f.last_reviewed | fmt_date }}</span></div>
+          {% endif %}
+          {% if f.static_finding %}
+          <div class="row"><span class="k">Type</span><span class="v">Static</span></div>
+          {% elif f.dynamic_finding %}
+          <div class="row"><span class="k">Type</span><span class="v">Dynamic</span></div>
+          {% endif %}
+        </div>
+
+        {% if f.fix_available or f.fix_version or f.planned_remediation_date or f.planned_remediation_version or f.effort_for_fixing %}
+        <div class="finding-section">
+          <div class="label">Remediation status</div>
+          <div class="body">
+            <ul style="margin: 2pt 0;">
+              {% if f.fix_available %}<li>Fix available{% if f.fix_version %} in version <code>{{ f.fix_version }}</code>{% endif %}</li>{% endif %}
+              {% if f.planned_remediation_date %}<li>Planned remediation: {{ f.planned_remediation_date | fmt_date }}{% if f.planned_remediation_version %} (target version <code>{{ f.planned_remediation_version }}</code>){% endif %}</li>{% endif %}
+              {% if f.effort_for_fixing %}<li>Effort: {{ f.effort_for_fixing }}</li>{% endif %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if f.description %}
+        <div class="finding-section">
+          <div class="label">Description</div>
+          <div class="body">{{ f.description | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.severity_justification %}
+        <div class="finding-section">
+          <div class="label">Severity justification</div>
+          <div class="body">{{ f.severity_justification | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.impact %}
+        <div class="finding-section">
+          <div class="label">Impact</div>
+          <div class="body">{{ f.impact | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.steps_to_reproduce %}
+        <div class="finding-section">
+          <div class="label">Steps to reproduce</div>
+          <div class="body">{{ f.steps_to_reproduce | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.has_dast_evidence %}
+        <div class="finding-section">
+          <div class="label">Dynamic evidence</div>
+          <div class="evidence-grid">
+            {% if f.url %}<div class="k">URL</div><div class="v">{{ f.url }}</div>{% endif %}
+            {% if f.param %}<div class="k">Parameter</div><div class="v">{{ f.param }}</div>{% endif %}
+            {% if f.payload %}<div class="k">Payload</div><div class="v">{{ f.payload }}</div>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if f.has_sast_evidence %}
+        <div class="finding-section">
+          <div class="label">Static evidence</div>
+          <div class="evidence-grid">
+            {% if f.sast_source_file_path %}<div class="k">Source file</div><div class="v">{{ f.sast_source_file_path }}{% if f.sast_source_line %}:{{ f.sast_source_line }}{% endif %}</div>{% endif %}
+            {% if f.sast_source_object %}<div class="k">Source</div><div class="v">{{ f.sast_source_object }}</div>{% endif %}
+            {% if f.sast_sink_object %}<div class="k">Sink</div><div class="v">{{ f.sast_sink_object }}</div>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if f.mitigation %}
+        <div class="finding-section">
+          <div class="label">Mitigation</div>
+          <div class="body">{{ f.mitigation | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.references %}
+        <div class="finding-section">
+          <div class="label">References</div>
+          <div class="body">{{ f.references | md }}</div>
+        </div>
+        {% endif %}
+
+        {% if f.jira %}
+          {% for j in f.jira %}
+          <div class="jira-row">
+            <strong>Jira:</strong>
+            {% if j.url %}<a href="{{ j.url }}">{{ j.jira_key or j.jira_id or "ticket" }}</a>{% else %}{{ j.jira_key or j.jira_id }}{% endif %}
+            {% if j.jira_change %}<span style="color: #64748b; font-size: 8pt; margin-left: 8pt;">last sync {{ j.jira_change | fmt_date }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        {% if f.endpoint_status %}
+        <div class="finding-section">
+          <div class="label">Affected endpoints ({{ f.endpoint_status | length }})</div>
+          <table class="endpoint-table">
+            <thead><tr><th>Endpoint</th><th>Mitigated</th><th>False positive</th><th>Out of scope</th><th>Risk accepted</th></tr></thead>
+            <tbody>
+              {% for ep in f.endpoint_status %}
+              <tr>
+                <td><code>{{ ep.endpoint or ep.id }}</code></td>
+                <td>{{ "yes" if ep.mitigated else "—" }}{% if ep.mitigated_time %} <span style="color:#64748b;">({{ ep.mitigated_time | fmt_date }})</span>{% endif %}</td>
+                <td>{{ "yes" if ep.false_positive else "—" }}</td>
+                <td>{{ "yes" if ep.out_of_scope else "—" }}</td>
+                <td>{{ "yes" if ep.risk_accepted else "—" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        {% if f.notes %}
+        <div class="finding-section">
+          <div class="label">Notes ({{ f.notes | length }})</div>
+          <div class="notes-block">
+            {% for n in f.notes %}
+            <div class="note">
+              <span class="author">{{ n.author.username if n.author else "unknown" }}</span>
+              <span class="date">{{ n.date | fmt_date }}</span>
+              {% if n.private %}<span class="badge" style="background:#475569;color:#fff;">private</span>{% endif %}
+              <div>{{ n.entry | md }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if f.tags %}
+        <div class="tags">Tags: {{ f.tags | join(", ") }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+</body>
+</html>
