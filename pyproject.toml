@@ -106,7 +106,6 @@ include = [
     "README.md",
     "LICENSE.txt",
     "CHANGELOG.md",
-    "PLAN.md",
 ]
 exclude = [
     "src/dd_cli/_version.py",

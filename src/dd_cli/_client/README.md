@@ -38,8 +38,8 @@ before merging.
 
 ## Why vendor it?
 
-The plan ([`PLAN.md`](../../../PLAN.md) D17) keeps the generated client
-**vendored** rather than built at install time. Trade-offs:
+Decision D17 (see [`.claude/decisions.md`](../../../.claude/decisions.md))
+keeps the generated client **vendored** rather than built at install time. Trade-offs:
 
 - ✅ `pip install dd-cli` works offline (no network, no codegen tools).
 - ✅ Contributors can grep the client directly.

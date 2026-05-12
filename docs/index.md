@@ -26,4 +26,4 @@ pip install dd-cli
 
 ## Status
 
-dd-cli is **v2.0** — feature-complete, all PLAN.md success criteria met. Maintained by [Osama Mahmood](https://github.com/OsamaMahmood) under the BSD 3-Clause license, the same as the upstream `dd-import` project it succeeds.
+dd-cli is **v2.0** — feature-complete, shipped 2026-05-07. Maintained by [Osama Mahmood](https://github.com/OsamaMahmood) under the BSD 3-Clause license, the same as the upstream `dd-import` project it succeeds.

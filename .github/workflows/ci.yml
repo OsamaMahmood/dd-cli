@@ -6,13 +6,11 @@ on:
     paths-ignore:
       - "docs/**"
       - "*.md"
-      - "PLAN.md"
   push:
     branches: [main]
     paths-ignore:
       - "docs/**"
       - "*.md"
-      - "PLAN.md"
 
 concurrency:
   group: ci-${{ github.ref }}

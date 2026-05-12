@@ -242,8 +242,8 @@ A full DD_* env-var reference lives in the [Configuration guide](https://osamama
 ## Documentation
 
 - **[Documentation site](https://osamamahmood.github.io/dd-cli/)** — install, quickstart, configuration, CLI reference, CI recipes, migration guide
-- [`PLAN.md`](PLAN.md) — architecture and roadmap
 - [`RELEASING.md`](RELEASING.md) — how releases are cut and published
+- [`CLAUDE.md`](CLAUDE.md) + [`.claude/`](.claude/) — contributor + agent ramp-up docs (architecture, conventions, workflows, decisions)
 
 ## Development
 
