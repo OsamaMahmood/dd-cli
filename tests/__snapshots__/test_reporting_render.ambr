@@ -1,4 +1,583 @@
 # serializer version: 1
+# name: test_render_html_snapshot
+  '''
+  <!doctype html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <title>Security Report — Payments</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 22mm 18mm 22mm 18mm;
+      @top-left {
+        content: "Payments — Security Report";
+        font-family: 'Helvetica', sans-serif;
+        font-size: 9pt;
+        color: #666;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Helvetica', sans-serif;
+        font-size: 9pt;
+        color: #666;
+      }
+    }
+  
+    html { -weasy-print-color-adjust: exact; }
+    body {
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      color: #1f2937;
+      font-size: 10pt;
+      line-height: 1.5;
+    }
+    h1, h2, h3, h4 { color: #0f172a; margin-top: 0; }
+    h1 { font-size: 26pt; margin-bottom: 4pt; }
+    h2 { font-size: 18pt; border-bottom: 2px solid #0f172a; padding-bottom: 4pt; margin-top: 18pt; }
+    h3 { font-size: 14pt; margin-top: 14pt; color: #1e3a8a; }
+    h4 { font-size: 11pt; margin-top: 10pt; }
+  
+    p { margin: 4pt 0; }
+    ul, ol { margin: 4pt 0 4pt 16pt; padding: 0; }
+    ul li, ol li { margin: 1pt 0; }
+  
+    .cover {
+      text-align: left;
+      padding: 30pt 0;
+      border-bottom: 4px solid #0f172a;
+      margin-bottom: 18pt;
+    }
+    .cover .meta { color: #64748b; font-size: 10pt; margin-top: 10pt; }
+    .cover .meta div { margin: 2pt 0; }
+  
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6pt;
+      margin: 12pt 0 18pt;
+    }
+    .summary-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 8pt 10pt;
+      border-radius: 4pt;
+    }
+    .summary-card .label { font-size: 7pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.4pt; line-height: 1.2; }
+    .summary-card .sub { font-size: 7pt; color: #64748b; margin-top: 2pt; }
+    .summary-card .value { font-size: 18pt; font-weight: 700; color: #0f172a; line-height: 1.1; margin-top: 2pt; }
+    .summary-card.alert {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+    .summary-card.alert .value { color: #991b1b; }
+    .summary-card.alert .label { color: #991b1b; }
+  
+    .severity-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6pt;
+      margin: 8pt 0 18pt;
+    }
+    .sev-card {
+      padding: 8pt;
+      border-radius: 4pt;
+      text-align: center;
+      color: #fff;
+    }
+    .sev-card .n { font-size: 16pt; font-weight: 700; display: block; }
+    .sev-card .l { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5pt; }
+    .sev-Critical { background: #991b1b; }
+    .sev-High { background: #dc2626; }
+    .sev-Medium { background: #d97706; }
+    .sev-Low { background: #2563eb; }
+    .sev-Info { background: #475569; }
+  
+    .chip {
+      display: inline-block;
+      padding: 2pt 8pt;
+      border-radius: 10pt;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5pt;
+    }
+    .chip.Critical { background: #991b1b; }
+    .chip.High { background: #dc2626; }
+    .chip.Medium { background: #d97706; }
+    .chip.Low { background: #2563eb; }
+    .chip.Info { background: #475569; }
+  
+    .badge {
+      display: inline-block;
+      padding: 1pt 6pt;
+      border-radius: 3pt;
+      font-size: 7.5pt;
+      font-weight: 700;
+      margin-right: 4pt;
+      text-transform: uppercase;
+      letter-spacing: 0.3pt;
+    }
+    .badge-kev { background: #7c2d12; color: #fef3c7; }
+    .badge-epss { background: #0f172a; color: #fef3c7; }
+    .badge-fix { background: #166534; color: #fff; }
+    .badge-exploited { background: #991b1b; color: #fff; }
+  
+    .sla-ok { background: #dcfce7; color: #166534; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+    .sla-warn { background: #fef3c7; color: #92400e; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+    .sla-breach { background: #fee2e2; color: #991b1b; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+    .sla-none { background: #f1f5f9; color: #64748b; padding: 1pt 6pt; border-radius: 3pt; font-size: 8pt; font-weight: 700; }
+  
+    .engagement {
+      page-break-before: always;
+    }
+    .engagement:first-of-type { page-break-before: avoid; }
+  
+    .engagement-meta, .test-meta {
+      background: #f1f5f9;
+      border-left: 3px solid #1e3a8a;
+      padding: 8pt 12pt;
+      margin: 6pt 0 10pt;
+      font-size: 9pt;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2pt 18pt;
+    }
+    .engagement-meta div, .test-meta div { margin: 0; }
+    .engagement-meta strong, .test-meta strong {
+      color: #475569;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+      font-weight: 700;
+      margin-right: 6pt;
+    }
+  
+    .test {
+      margin-top: 18pt;
+      page-break-inside: avoid;
+    }
+    .empty-test {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      color: #64748b;
+      padding: 10pt;
+      border-radius: 4pt;
+      font-style: italic;
+    }
+  
+    .finding {
+      margin-top: 12pt;
+      border: 1px solid #e2e8f0;
+      border-radius: 4pt;
+      padding: 10pt 12pt;
+      page-break-inside: avoid;
+    }
+    .finding h4 {
+      display: flex;
+      align-items: center;
+      gap: 8pt;
+      margin: 0 0 6pt;
+    }
+    .finding-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3pt 18pt;
+      font-size: 9pt;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 3pt;
+      padding: 8pt 12pt;
+      margin: 8pt 0 10pt;
+    }
+    .finding-meta .row { display: flex; gap: 8pt; align-items: baseline; min-width: 0; }
+    .finding-meta .k {
+      color: #64748b;
+      font-weight: 700;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+      min-width: 78pt;
+      flex-shrink: 0;
+      padding-top: 1pt;
+    }
+    .finding-meta .v {
+      color: #1f2937;
+      flex: 1;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .finding-meta .v code {
+      font-size: 8.5pt;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+    }
+    .finding-section {
+      margin-top: 8pt;
+    }
+    .finding-section .label {
+      font-weight: 700;
+      font-size: 9pt;
+      color: #0f172a;
+      margin-bottom: 2pt;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+    }
+    .finding-section .body {
+      font-size: 9.5pt;
+    }
+    .finding-section .body p { margin: 4pt 0; }
+    .finding-section .body code {
+      font-family: 'Menlo', monospace;
+      background: #f1f5f9;
+      padding: 1pt 4pt;
+      border-radius: 2pt;
+      font-size: 8.5pt;
+    }
+    .finding-section .body pre {
+      background: #0f172a;
+      color: #f1f5f9;
+      padding: 6pt 8pt;
+      border-radius: 3pt;
+      font-size: 8.5pt;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .finding-section .body pre code { background: transparent; padding: 0; color: inherit; }
+  
+    code, .mono {
+      font-family: 'Menlo', 'Courier New', monospace;
+      font-size: 9pt;
+      background: #f1f5f9;
+      padding: 1pt 4pt;
+      border-radius: 2pt;
+    }
+    .tags { font-size: 8pt; color: #64748b; margin-top: 6pt; }
+  
+    table { width: 100%; border-collapse: collapse; margin: 8pt 0; }
+    th, td { text-align: left; padding: 4pt 8pt; border-bottom: 1px solid #e2e8f0; font-size: 9pt; vertical-align: top; }
+    th { background: #f8fafc; font-weight: 700; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; break-inside: avoid; }
+  
+    .top-risk-table td.title { max-width: 240pt; }
+    .top-risk-table .rank { width: 18pt; color: #64748b; font-weight: 700; }
+    .top-risk-table tr, .top-risk-table thead { page-break-inside: avoid; }
+    .top-risk-table thead { display: table-header-group; }
+    .top-risk-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+  
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 110pt 1fr;
+      gap: 4pt 10pt;
+      font-size: 9pt;
+      margin-top: 4pt;
+    }
+    .evidence-grid .k { color: #64748b; font-weight: 700; }
+    .evidence-grid .v { font-family: 'Menlo', monospace; font-size: 8.5pt; word-break: break-all; }
+  
+    .delta-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 6pt 0; }
+    .delta-card { padding: 6pt 8pt; border-radius: 3pt; text-align: center; font-size: 9pt; }
+    .delta-created { background: #fee2e2; color: #991b1b; }
+    .delta-reactivated { background: #fef3c7; color: #92400e; }
+    .delta-closed { background: #dcfce7; color: #166534; }
+    .delta-untouched { background: #f1f5f9; color: #475569; }
+    .delta-card .n { display: block; font-size: 13pt; font-weight: 700; }
+    .delta-card .l { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.4pt; }
+  
+    .ra-card {
+      border: 1px solid #fef3c7;
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      padding: 10pt 12pt;
+      margin: 10pt 0;
+      border-radius: 3pt;
+      page-break-inside: avoid;
+    }
+    .ra-card h4 { margin: 0 0 4pt; color: #92400e; }
+    .ra-meta { font-size: 8.5pt; color: #78350f; margin-bottom: 6pt; }
+    .ra-meta span { margin-right: 10pt; }
+  
+    .notes-block { background: #f8fafc; border-left: 3px solid #64748b; padding: 6pt 10pt; margin-top: 8pt; font-size: 9pt; }
+    .notes-block .note { padding: 3pt 0; border-bottom: 1px dashed #e2e8f0; }
+    .notes-block .note:last-child { border-bottom: none; }
+    .notes-block .author { font-weight: 700; color: #1e3a8a; }
+    .notes-block .date { color: #64748b; font-size: 8pt; }
+  
+    .jira-row { background: #eff6ff; border-left: 3px solid #1d4ed8; padding: 6pt 10pt; margin-top: 8pt; font-size: 9pt; }
+    .jira-row a { color: #1d4ed8; text-decoration: none; font-weight: 700; }
+  
+    .endpoint-table { font-size: 8.5pt; margin-top: 6pt; }
+    .endpoint-table th, .endpoint-table td { padding: 3pt 6pt; }
+  </style>
+  </head>
+  <body>
+  
+  <div class="cover">
+    <h1>Security Report</h1>
+    <div style="font-size: 14pt; color: #334155;">Payments</div>
+    <div class="meta">
+      <div><strong>Generated:</strong> <stamp></div>
+      <div><strong>Source:</strong> https://dd.example.com</div>
+      <div><strong>Product ID:</strong> 42</div>
+  <div><strong>Business criticality:</strong> high</div><div><strong>Platform:</strong> web</div><div><strong>Lifecycle:</strong> production</div><div><strong>Numeric grade:</strong> 78</div>      <div><strong>SLA thresholds:</strong>
+          Critical 7d ·
+          High 30d ·
+          Medium 90d ·
+          Low 180d
+  <em>(Default)</em>      </div>
+    </div>
+  </div>
+  
+  <h2>Product description</h2>
+  <div><p>Internal payment processing service.</p></div>
+  
+  <h2>Executive summary</h2>
+  
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">Active engagements</div>
+      <div class="value">1</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Tests</div>
+      <div class="value">2</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Active findings</div>
+      <div class="value">2</div>
+    </div>
+    <div class="summary-card alert">
+      <div class="label">SLA breached</div>
+      <div class="value">1</div>
+      <div class="sub">past due date</div>
+    </div>
+    <div class="summary-card alert">
+      <div class="label">KEV</div>
+      <div class="value">1</div>
+      <div class="sub">known exploited</div>
+    </div>
+  </div>
+  
+  
+  <div class="severity-row">
+    <div class="sev-card sev-Critical"><span class="n">1</span><span class="l">Critical</span></div>
+    <div class="sev-card sev-High"><span class="n">0</span><span class="l">High</span></div>
+    <div class="sev-card sev-Medium"><span class="n">0</span><span class="l">Medium</span></div>
+    <div class="sev-card sev-Low"><span class="n">1</span><span class="l">Low</span></div>
+    <div class="sev-card sev-Info"><span class="n">0</span><span class="l">Info</span></div>
+  </div>
+  
+  <h3>Top 2 riskiest findings</h3>
+  <p style="font-size: 9pt; color: #64748b; margin-top: 0;">
+  Ranked by severity, then KEV exposure, then EPSS, then age.
+  </p>
+  <table class="top-risk-table">
+    <thead>
+      <tr>
+        <th class="rank">#</th>
+        <th>Finding</th>
+        <th>Severity</th>
+        <th>SLA</th>
+        <th>EPSS</th>
+        <th>Age</th>
+        <th>Engagement / Test</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="rank">1</td>
+        <td class="title">
+          Path traversal in /admin
+  <span class="badge badge-kev">KEV</span><span class="badge badge-fix">Fix</span>      </td>
+        <td><span class="chip Critical">Critical</span></td>
+        <td><span class="sla-breach">BREACHED by 3d</span></td>
+        <td>87.4%</td>
+        <td>12d</td>
+        <td style="font-size: 8.5pt;">Q4 2026 Pentest<br><span style="color: #64748b;">Trivy Scan</span></td>
+      </tr>
+      <tr>
+        <td class="rank">2</td>
+        <td class="title">
+          Outdated lodash
+  <span class="badge badge-fix">Fix</span>      </td>
+        <td><span class="chip Low">Low</span></td>
+        <td><span class="sla-ok">On track (30d left)</span></td>
+        <td>—</td>
+        <td>60d</td>
+        <td style="font-size: 8.5pt;">Q4 2026 Pentest<br><span style="color: #64748b;">Trivy Scan</span></td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h3>Finding age distribution</h3>
+  <table>
+    <thead>
+      <tr><th>Age bucket</th><th>Total</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th><th>Info</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>0-30 days</strong></td>
+        <td>1</td>
+        <td>1</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td><strong>30-90 days</strong></td>
+        <td>1</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>1</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td><strong>90-180 days</strong></td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td><strong>180+ days</strong></td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  
+  
+  <div class="engagement">
+    <h2>Engagement: Q4 2026 Pentest</h2>
+    <div class="engagement-meta">
+      <div><strong>Status:</strong> In Progress</div>
+  <div><strong>Version:</strong> 2.1.0</div>    <div><strong>Window:</strong> 2026-10-01 → 2026-12-31</div>
+  <div><strong>Branch/Tag:</strong> main</div><div><strong>Commit:</strong> <code>abc1234def5678</code></div>    <div><strong>Tests:</strong> 2</div>
+    </div>
+  
+    <div class="test">
+      <h3>Trivy Scan — Container Trivy</h3>
+      <div class="test-meta">
+  <div><strong>Scan type:</strong> Trivy Scan</div>      <div><strong>Window:</strong> 2026-10-01 → 2026-10-01</div>
+  <div><strong>Branch/Tag:</strong> main</div><div><strong>Commit:</strong> <code>abc1234def5678</code></div>      <div><strong>Active findings:</strong> 2</div>
+      </div>
+  
+  
+        <div class="finding">
+          <h4>
+            <span class="chip Critical">Critical</span>
+            Path traversal in /admin
+  <span class="badge badge-kev">KEV</span><span class="badge badge-fix">Fix available</span>        </h4>
+          <div class="finding-meta">
+            <div class="row"><span class="k">Severity</span><span class="v">Critical (S0)</span></div>
+            <div class="row"><span class="k">SLA</span><span class="v"><span class="sla-breach">BREACHED by 3d</span></span></div>
+            <div class="row"><span class="k">Age</span><span class="v">12 days</span></div>
+            <div class="row"><span class="k">Discovered</span><span class="v">2026-09-28</span></div>
+            <div class="row"><span class="k">CWE</span><span class="v">CWE-22</span></div>
+            <div class="row"><span class="k">CVE</span><span class="v">CVE-2026-12345</span></div>
+            <div class="row"><span class="k">CVSSv3</span><span class="v">9.1</span></div>
+            <div class="row"><span class="k">CVSSv4</span><span class="v"></span></div>
+            <div class="row"><span class="k">EPSS</span><span class="v">87.4% (p99.1)</span></div>
+            <div class="row"><span class="k">Confidence</span><span class="v"></span></div>
+            <div class="row"><span class="k">Type</span><span class="v">Static</span></div>
+          </div>
+  
+          <div class="finding-section">
+            <div class="label">Remediation status</div>
+            <div class="body">
+              <ul style="margin: 2pt 0;">
+  <li>Fix available in version <code>2.1.1</code></li>            </ul>
+            </div>
+          </div>
+  
+          <div class="finding-section">
+            <div class="label">Description</div>
+            <div class="body"><p>User input flows into a file open call without sanitisation.</p></div>
+          </div>
+  
+  
+  
+  
+  
+          <div class="finding-section">
+            <div class="label">Static evidence</div>
+            <div class="evidence-grid">
+  <div class="k">Source file</div><div class="v">src/admin/handler.py:142</div>          </div>
+          </div>
+  
+          <div class="finding-section">
+            <div class="label">Mitigation</div>
+            <div class="body"><p>Validate the path against an allowlist or canonicalise.</p></div>
+          </div>
+  
+  
+  
+  
+  
+        </div>
+        <div class="finding">
+          <h4>
+            <span class="chip Low">Low</span>
+            Outdated lodash
+  <span class="badge badge-fix">Fix available</span>        </h4>
+          <div class="finding-meta">
+            <div class="row"><span class="k">Severity</span><span class="v">Low</span></div>
+            <div class="row"><span class="k">SLA</span><span class="v"><span class="sla-ok">On track (30d left)</span></span></div>
+            <div class="row"><span class="k">Age</span><span class="v">60 days</span></div>
+            <div class="row"><span class="k">Discovered</span><span class="v">2026-09-10</span></div>
+            <div class="row"><span class="k">CVSSv3</span><span class="v"></span></div>
+            <div class="row"><span class="k">CVSSv4</span><span class="v"></span></div>
+            <div class="row"><span class="k">Confidence</span><span class="v"></span></div>
+            <div class="row"><span class="k">Component</span><span class="v">lodash @ 4.17.15</span></div>
+          </div>
+  
+          <div class="finding-section">
+            <div class="label">Remediation status</div>
+            <div class="body">
+              <ul style="margin: 2pt 0;">
+  <li>Fix available in version <code>4.17.21</code></li>            </ul>
+            </div>
+          </div>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        </div>
+    </div>
+    <div class="test">
+      <h3>Bandit Scan</h3>
+      <div class="test-meta">
+  <div><strong>Scan type:</strong> Bandit Scan</div>      <div><strong>Window:</strong> — → —</div>
+        <div><strong>Active findings:</strong> 0</div>
+      </div>
+  
+  
+      <div class="empty-test">No active findings were identified for this test.</div>
+    </div>
+  </div>
+  
+  </body>
+  </html>
+  '''
+# ---
 # name: test_render_markdown_snapshot
   '''
   # Security Report — Payments
