@@ -99,7 +99,7 @@ These are read by the import workflows. Every variable here is honored by the le
 | Legacy | New | What |
 |---|---|---|
 | `DD_URL` | `DD_CLI_URL` | DefectDojo base URL |
-| `DD_API_KEY` | `DD_CLI_API_KEY` | API token (sent as `Authorization: Token <key>`) |
+| `DD_API_KEY` / `DD_API_TOKEN` | `DD_CLI_API_KEY` | API token (sent as `Authorization: Token <key>`). `DD_API_TOKEN` is the name used by [`dd-reporting`](https://github.com/OsamaMahmood/dd-reporting) and is honored as of v2.1 so users migrating to `dd report` don't have to rename their `.env`. `DD_CLI_API_KEY` still takes precedence. |
 | `DD_SSL_VERIFY` | `DD_CLI_SSL_VERIFY` | `true`/`false` |
 | `DD_EXTRA_HEADER_1` + `DD_EXTRA_HEADER_1_VALUE` | — | Header *name* + *value* pair (slot 1) |
 | `DD_EXTRA_HEADER_2` + `DD_EXTRA_HEADER_2_VALUE` | — | Header *name* + *value* pair (slot 2) |

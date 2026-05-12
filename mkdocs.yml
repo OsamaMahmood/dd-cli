@@ -75,11 +75,13 @@ nav:
   - Quickstart: quickstart.md
   - Configuration: configuration.md
   - Importing findings: importing-findings.md
+  - Reporting: reporting.md
   - Migration from dd-import: migration.md
   - CLI reference: cli-reference.md
-  - CI recipes:
+  - Recipes:
       - GitHub Actions: recipes/github-actions.md
       - GitLab CI: recipes/gitlab-ci.md
+      - Reporting to PDF: recipes/reporting-pdf.md
   - Contributing: contributing.md
 
 extra:

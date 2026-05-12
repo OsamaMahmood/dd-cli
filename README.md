@@ -44,6 +44,7 @@ $ dd --help
 - **Drop-in replacement for `dd-import`.** Existing CI pipelines that invoke `dd-reimport-findings` or `dd-import-languages` with `DD_*` env vars keep working unchanged. The legacy console scripts are wired as thin shims over the new workflow code.
 - **Pleasant interactive use.** Rich tables, JSON / YAML output for piping, profiles for switching between DefectDojo instances, `dd configure` interactive setup, `dd <resource> edit <id>` opens the resource as YAML in `$EDITOR`, action verbs like `dd findings close`, `risk-accept`, `dd engagements close/reopen`.
 - **Safe writes.** `--dry-run` previews every mutation without sending HTTP. `--yes`/`-y` skips the destructive-op confirmation prompt for scripts. Typed exit codes (auth=3, not-found=5, etc.) so CI can branch on what went wrong.
+- **Board-ready reports.** `dd report generate --product 42` emits a polished Markdown + HTML report with SLA aging, KEV exposure, EPSS, scan-over-scan deltas, and formal risk-acceptance — fields the built-in DefectDojo report doesn't surface. Open the HTML in any browser → Save as PDF.
 - **Validated against real DefectDojo.** 24 integration tests run against a live instance per release, including a full Trivy-report import round-trip.
 
 ## Install
@@ -109,6 +110,9 @@ dd import findings \
   --product-type "Web Apps" \
   --product "Payments" \
   --auto-create
+
+# 6. Generate a polished Markdown + HTML report for a product
+dd report generate --product 42 --detailed --with-history
 ```
 
 ## Configuration
@@ -241,7 +245,7 @@ A full DD_* env-var reference lives in the [Configuration guide](https://osamama
 
 ## Documentation
 
-- **[Documentation site](https://osamamahmood.github.io/dd-cli/)** — install, quickstart, configuration, CLI reference, CI recipes, migration guide
+- **[Documentation site](https://osamamahmood.github.io/dd-cli/)** — install, quickstart, configuration, CLI reference, reporting, CI recipes, migration guide
 - [`RELEASING.md`](RELEASING.md) — how releases are cut and published
 - [`CLAUDE.md`](CLAUDE.md) + [`.claude/`](.claude/) — contributor + agent ramp-up docs (architecture, conventions, workflows, decisions)
 
