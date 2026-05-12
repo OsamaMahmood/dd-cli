@@ -192,7 +192,12 @@ def test_report_with_test_filter_that_matches_nothing_errors(
         json={
             "next": None,
             "results": [
-                {"id": 10, "test_type": 100, "scan_type": "Trivy Scan", "test_type_name": "Trivy Scan"}
+                {
+                    "id": 10,
+                    "test_type": 100,
+                    "scan_type": "Trivy Scan",
+                    "test_type_name": "Trivy Scan",
+                }
             ],
         },
     )
