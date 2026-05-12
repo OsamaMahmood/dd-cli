@@ -1,0 +1,288 @@
+# Security Report — {{ product.name }}
+
+**Generated:** {{ generated_at }}
+**Source:** {{ dd_url }}
+**Product ID:** {{ product.id }}
+{% if product.business_criticality %}**Business criticality:** {{ product.business_criticality }}
+{% endif %}
+{% if product.platform %}**Platform:** {{ product.platform }}
+{% endif %}
+{% if product.lifecycle %}**Lifecycle:** {{ product.lifecycle }}
+{% endif %}
+{% if product.prod_numeric_grade is not none %}**Numeric grade:** {{ product.prod_numeric_grade }}
+{% endif %}
+{% if test_filters %}**Test filter:** {{ test_filters | join(", ") }} *(only matching tests included)*
+{% endif %}
+{% if sla_configurations %}{% set sla = sla_configurations[0] %}**SLA thresholds:** Critical {{ sla.critical or "—" }}d · High {{ sla.high or "—" }}d · Medium {{ sla.medium or "—" }}d · Low {{ sla.low or "—" }}d{% if sla.name %} *({{ sla.name }})*{% endif %}
+{% endif %}
+
+{% if product.description %}
+## Product description
+
+{{ product.description }}
+{% endif %}
+
+## Executive summary
+
+| Metric | Count |
+|---|---:|
+| Active engagements | {{ totals.engagements }} |
+| Tests | {{ totals.tests }} |
+| Active findings | {{ totals.findings }} |
+| KEV (known exploited) | {{ totals.kev }} |
+| SLA breached | {{ totals.sla_breach }} |
+| Critical | {{ totals.severity.Critical }} |
+| High | {{ totals.severity.High }} |
+| Medium | {{ totals.severity.Medium }} |
+| Low | {{ totals.severity.Low }} |
+| Info | {{ totals.severity.Info }} |
+{% if totals.risk_accepted %}| Risk-accepted (excluded above) | {{ totals.risk_accepted }} |
+{% endif %}
+
+{% if top_risk %}
+### Top {{ top_risk | length }} riskiest findings
+
+*Ranked by severity, KEV exposure, EPSS, then age.*
+
+| # | Finding | Severity | SLA | EPSS | Age | Engagement / Test |
+|---:|---|---|---|---:|---:|---|
+{% for f in top_risk %}
+| {{ loop.index }} | {{ f.title }}{% if f.known_exploited %} **[KEV]**{% endif %}{% if f.fix_available %} *[Fix]*{% endif %} | {{ f.severity }} | {{ f.sla.label }} | {% if f.epss_pct is not none %}{{ f.epss_pct }}%{% else %}—{% endif %} | {% if f.age %}{{ f.age }}d{% else %}—{% endif %} | {{ f._engagement_name }} / {{ f._test_name }} |
+{% endfor %}
+{% endif %}
+
+{% if totals.findings %}
+
+### Finding age distribution
+
+| Age bucket | Total | Critical | High | Medium | Low | Info |
+|---|---:|---:|---:|---:|---:|---:|
+{% for bucket in aging %}
+| {{ bucket.label }} | {{ bucket.total }} | {{ bucket.severity.Critical }} | {{ bucket.severity.High }} | {{ bucket.severity.Medium }} | {{ bucket.severity.Low }} | {{ bucket.severity.Info }} |
+{% endfor %}
+{% endif %}
+
+{% if risk_acceptances %}
+
+## Risk acceptance
+
+*Findings below are formally risk-accepted and excluded from the active findings counts.*
+
+{% for ra in risk_acceptances %}
+
+### {{ ra.name }}
+
+- **Decision:** {{ ra.decision }}
+{% if ra.accepted_by %}- **Accepted by:** {{ ra.accepted_by }}
+{% endif %}
+{% if ra.expiration_date %}- **Expires:** {{ ra.expiration_date | fmt_date }}
+{% endif %}
+{% if ra.created %}- **Created:** {{ ra.created | fmt_date }}
+{% endif %}
+- **Findings:** {{ ra.finding_count }}
+
+{% if ra.decision_details %}
+{{ ra.decision_details }}
+{% endif %}
+
+{% if ra.findings %}
+| Severity | Title | Engagement / Test |
+|---|---|---|
+{% for item in ra.findings %}
+| {{ item.severity }} | {{ item.title }} | {{ item._engagement_name }} / {{ item._test_name }} |
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if not engagements %}
+
+> No active engagements were found for this product.
+{% endif %}
+
+{% for eng in engagements %}
+
+---
+
+## Engagement: {{ eng.name }}
+
+- **Status:** {{ eng.status or "—" }}
+- **Version:** {{ eng.version or "—" }}
+- **Window:** {{ eng.target_start | fmt_date }} → {{ eng.target_end | fmt_date }}
+{% if eng.branch_tag %}- **Branch/Tag:** {{ eng.branch_tag }}
+{% endif %}
+{% if eng.commit_hash %}- **Commit:** `{{ eng.commit_hash }}`
+{% endif %}
+{% if eng.build_id %}- **Build:** {{ eng.build_id }}
+{% endif %}
+- **Tests:** {{ eng.test_count }}
+
+{% if eng.description %}
+{{ eng.description }}
+{% endif %}
+
+{% for test in eng.tests %}
+
+### {{ test.test_type_name }}{% if test.title and test.title != test.test_type_name %} — {{ test.title }}{% endif %}
+
+- **Scan type:** {{ test.scan_type or "—" }}
+- **Window:** {{ test.target_start | fmt_date }} → {{ test.target_end | fmt_date }}
+{% if test.branch_tag %}- **Branch/Tag:** {{ test.branch_tag }}
+{% endif %}
+{% if test.commit_hash %}- **Commit:** `{{ test.commit_hash }}`
+{% endif %}
+- **Active findings:** {{ test.finding_count }}
+
+{% if test.scan_delta %}
+
+**Scan delta** (latest: {{ test.scan_delta.latest_at | fmt_date }}{% if test.scan_delta.latest_branch %}, branch `{{ test.scan_delta.latest_branch }}`{% endif %}{% if test.scan_delta.latest_commit %}, `{{ test.scan_delta.latest_commit[:8] }}`{% endif %} — {{ test.scan_delta.total_imports }} import(s) total)
+
+| New | Reactivated | Closed | Untouched |
+|---:|---:|---:|---:|
+| {{ test.scan_delta.created }} | {{ test.scan_delta.reactivated }} | {{ test.scan_delta.closed }} | {{ test.scan_delta.untouched }} |
+
+{% endif %}
+
+{% if test.finding_count == 0 %}
+> No active findings were identified for this test.
+{% else %}
+{% for f in test.findings %}
+
+#### [{{ f.severity }}] {{ f.title }}{% if f.known_exploited %} **[KEV]**{% endif %}{% if f.fix_available %} *[Fix available]*{% endif %}
+
+| | |
+|---|---|
+| Severity | {{ f.severity }}{% if f.numerical_severity %} ({{ f.numerical_severity }}){% endif %} |
+| SLA | {{ f.sla.label }} |
+{% if f.age is not none %}| Age | {{ f.age }} day{{ "s" if f.age != 1 else "" }} |
+{% endif %}
+{% if f.cwe %}| CWE | [CWE-{{ f.cwe }}](https://cwe.mitre.org/data/definitions/{{ f.cwe }}.html) |
+{% endif %}
+{% if f.cve %}| CVE | {{ f.cve }} |
+{% endif %}
+{% if f.cvssv3_score is not none %}| CVSSv3 | {{ f.cvssv3_score }} |
+{% endif %}
+{% if f.cvssv4_score is not none %}| CVSSv4 | {{ f.cvssv4_score }} |
+{% endif %}
+{% if f.epss_pct is not none %}| EPSS | {{ f.epss_pct }}%{% if f.epss_percentile_pct is not none %} (p{{ f.epss_percentile_pct }}){% endif %} |
+{% endif %}
+{% if f.scanner_confidence is not none %}| Scanner confidence | {{ f.scanner_confidence }} |
+{% endif %}
+{% if f.file_path %}| File | `{{ f.file_path }}`{% if f.line %}:{{ f.line }}{% endif %} |
+{% endif %}
+{% if f.component_name %}| Component | {{ f.component_name }}{% if f.component_version %} @ {{ f.component_version }}{% endif %} |
+{% endif %}
+{% if f.service %}| Service | {{ f.service }} |
+{% endif %}
+{% if f.endpoint_count %}| Endpoints affected | {{ f.endpoint_count }} |
+{% endif %}
+| Discovered | {{ f.date | fmt_date }} |
+{% if f.last_reviewed %}| Last reviewed | {{ f.last_reviewed | fmt_date }} |
+{% endif %}
+{% if f.static_finding %}| Type | Static |
+{% elif f.dynamic_finding %}| Type | Dynamic |
+{% endif %}
+
+{% if f.fix_available or f.planned_remediation_date or f.effort_for_fixing %}
+**Remediation status**
+
+{% if f.fix_available %}- Fix available{% if f.fix_version %} in version `{{ f.fix_version }}`{% endif %}
+{% endif %}
+{% if f.planned_remediation_date %}- Planned remediation: {{ f.planned_remediation_date | fmt_date }}{% if f.planned_remediation_version %} (target version `{{ f.planned_remediation_version }}`){% endif %}
+{% endif %}
+{% if f.effort_for_fixing %}- Effort: {{ f.effort_for_fixing }}
+{% endif %}
+{% endif %}
+
+{% if f.description %}
+**Description**
+
+{{ f.description }}
+{% endif %}
+
+{% if f.severity_justification %}
+**Severity justification**
+
+{{ f.severity_justification }}
+{% endif %}
+
+{% if f.impact %}
+**Impact**
+
+{{ f.impact }}
+{% endif %}
+
+{% if f.steps_to_reproduce %}
+**Steps to reproduce**
+
+{{ f.steps_to_reproduce }}
+{% endif %}
+
+{% if f.has_dast_evidence %}
+**Dynamic evidence**
+
+{% if f.url %}- URL: `{{ f.url }}`
+{% endif %}
+{% if f.param %}- Parameter: `{{ f.param }}`
+{% endif %}
+{% if f.payload %}- Payload: `{{ f.payload }}`
+{% endif %}
+{% endif %}
+
+{% if f.has_sast_evidence %}
+**Static evidence**
+
+{% if f.sast_source_file_path %}- Source file: `{{ f.sast_source_file_path }}`{% if f.sast_source_line %}:{{ f.sast_source_line }}{% endif %}
+{% endif %}
+{% if f.sast_source_object %}- Source: `{{ f.sast_source_object }}`
+{% endif %}
+{% if f.sast_sink_object %}- Sink: `{{ f.sast_sink_object }}`
+{% endif %}
+{% endif %}
+
+{% if f.mitigation %}
+**Mitigation**
+
+{{ f.mitigation }}
+{% endif %}
+
+{% if f.references %}
+**References**
+
+{{ f.references }}
+{% endif %}
+
+{% if f.jira %}
+**Jira:** {% for j in f.jira %}{% if j.url %}[{{ j.jira_key or j.jira_id }}]({{ j.url }}){% else %}{{ j.jira_key or j.jira_id }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+{% endif %}
+
+{% if f.endpoint_status %}
+
+**Affected endpoints ({{ f.endpoint_status | length }})**
+
+| Endpoint | Mitigated | False positive | Out of scope | Risk accepted |
+|---|---|---|---|---|
+{% for ep in f.endpoint_status %}
+| `{{ ep.endpoint or ep.id }}` | {{ "yes" if ep.mitigated else "—" }}{% if ep.mitigated_time %} ({{ ep.mitigated_time | fmt_date }}){% endif %} | {{ "yes" if ep.false_positive else "—" }} | {{ "yes" if ep.out_of_scope else "—" }} | {{ "yes" if ep.risk_accepted else "—" }} |
+{% endfor %}
+{% endif %}
+
+{% if f.notes %}
+
+**Notes ({{ f.notes | length }})**
+
+{% for n in f.notes %}
+- **{{ n.author.username if n.author else "unknown" }}** · {{ n.date | fmt_date }}{% if n.private %} *(private)*{% endif %}: {{ n.entry }}
+{% endfor %}
+{% endif %}
+
+{% if f.tags %}
+*Tags: {{ f.tags | join(", ") }}*
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endfor %}

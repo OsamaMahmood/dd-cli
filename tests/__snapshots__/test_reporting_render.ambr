@@ -1,0 +1,155 @@
+# serializer version: 1
+# name: test_render_markdown_snapshot
+  '''
+  # Security Report — Payments
+  
+  **Generated:** <stamp>
+  **Source:** https://dd.example.com
+  **Product ID:** 42
+  **Business criticality:** high
+  **Platform:** web
+  **Lifecycle:** production
+  **Numeric grade:** 78
+  **SLA thresholds:** Critical 7d · High 30d · Medium 90d · Low 180d *(Default)*
+  ## Product description
+  
+  Internal payment processing service.
+  
+  ## Executive summary
+  
+  | Metric | Count |
+  |---|---:|
+  | Active engagements | 1 |
+  | Tests | 2 |
+  | Active findings | 2 |
+  | KEV (known exploited) | 1 |
+  | SLA breached | 1 |
+  | Critical | 1 |
+  | High | 0 |
+  | Medium | 0 |
+  | Low | 1 |
+  | Info | 0 |
+  
+  ### Top 2 riskiest findings
+  
+  *Ranked by severity, KEV exposure, EPSS, then age.*
+  
+  | # | Finding | Severity | SLA | EPSS | Age | Engagement / Test |
+  |---:|---|---|---|---:|---:|---|
+  | 1 | Path traversal in /admin **[KEV]** *[Fix]* | Critical | BREACHED by 3d | 87.4% | 12d | Q4 2026 Pentest / Trivy Scan |
+  | 2 | Outdated lodash *[Fix]* | Low | On track (30d left) | — | 60d | Q4 2026 Pentest / Trivy Scan |
+  
+  
+  ### Finding age distribution
+  
+  | Age bucket | Total | Critical | High | Medium | Low | Info |
+  |---|---:|---:|---:|---:|---:|---:|
+  | 0-30 days | 1 | 1 | 0 | 0 | 0 | 0 |
+  | 30-90 days | 1 | 0 | 0 | 0 | 1 | 0 |
+  | 90-180 days | 0 | 0 | 0 | 0 | 0 | 0 |
+  | 180+ days | 0 | 0 | 0 | 0 | 0 | 0 |
+  
+  
+  
+  
+  ---
+  
+  ## Engagement: Q4 2026 Pentest
+  
+  - **Status:** In Progress
+  - **Version:** 2.1.0
+  - **Window:** 2026-10-01 → 2026-12-31
+  - **Branch/Tag:** main
+  - **Commit:** `abc1234def5678`
+  - **Tests:** 2
+  
+  
+  
+  ### Trivy Scan — Container Trivy
+  - **Scan type:** Trivy Scan
+  - **Window:** 2026-10-01 → 2026-10-01
+  - **Branch/Tag:** main
+  - **Commit:** `abc1234def5678`
+  - **Active findings:** 2
+  
+  
+  
+  #### [Critical] Path traversal in /admin **[KEV]** *[Fix available]*
+  | | |
+  |---|---|
+  | Severity | Critical (S0) |
+  | SLA | BREACHED by 3d |
+  | Age | 12 days |
+  | CWE | [CWE-22](https://cwe.mitre.org/data/definitions/22.html) |
+  | CVE | CVE-2026-12345 |
+  | CVSSv3 | 9.1 |
+  | CVSSv4 |  |
+  | EPSS | 87.4% (p99.1) |
+  | Scanner confidence |  |
+  | Discovered | 2026-09-28 |
+  | Type | Static |
+  
+  **Remediation status**
+  
+  - Fix available in version `2.1.1`
+  **Description**
+  
+  User input flows into a file open call without sanitisation.
+  
+  
+  
+  
+  
+  **Static evidence**
+  
+  - Source file: `src/admin/handler.py`:142
+  **Mitigation**
+  
+  Validate the path against an allowlist or canonicalise.
+  
+  
+  
+  
+  
+  
+  
+  #### [Low] Outdated lodash *[Fix available]*
+  | | |
+  |---|---|
+  | Severity | Low |
+  | SLA | On track (30d left) |
+  | Age | 60 days |
+  | CVSSv3 |  |
+  | CVSSv4 |  |
+  | Scanner confidence |  |
+  | Component | lodash @ 4.17.15 |
+  | Discovered | 2026-09-10 |
+  
+  **Remediation status**
+  
+  - Fix available in version `4.17.21`
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ### Bandit Scan
+  - **Scan type:** Bandit Scan
+  - **Window:** — → —
+  - **Active findings:** 0
+  
+  
+  > No active findings were identified for this test.
+  
+  
+  '''
+# ---

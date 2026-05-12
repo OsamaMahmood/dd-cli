@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, TypeVar
 
 import httpx
@@ -32,9 +33,11 @@ from dd_cli.errors import (
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_BACKOFF_FACTOR = 0.5
+DEFAULT_MAP_WORKERS = 10
 RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
 
 T = TypeVar("T")
+R = TypeVar("R")
 
 
 class DefectDojoClient:
@@ -227,6 +230,26 @@ class DefectDojoClient:
             next_url = next_link
             # Subsequent pages embed all params in `next`, so clear our explicit query.
             query = {}
+
+    def map_concurrent(
+        self,
+        fn: Callable[[T], R],
+        items: Iterable[T],
+        *,
+        max_workers: int = DEFAULT_MAP_WORKERS,
+    ) -> list[R]:
+        """Run `fn` over `items` with bounded thread-pool concurrency. Order preserved.
+
+        Useful for fan-out reads where each item triggers an independent HTTP
+        request (e.g. fetch notes / Jira mappings / endpoint_status per finding
+        when building a report). Errors from any worker propagate immediately —
+        callers handle them via the usual typed-exception flow.
+        """
+        items_list = list(items)
+        if not items_list:
+            return []
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            return list(pool.map(fn, items_list))
 
     # ------------------------------------------------------------------ #
     #  Internals                                                         #

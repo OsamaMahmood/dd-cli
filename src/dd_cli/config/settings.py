@@ -67,7 +67,10 @@ class _EnvOverrides(BaseSettings):
     )
     api_key: SecretStr | None = Field(
         default=None,
-        validation_alias=AliasChoices("DD_CLI_API_KEY", "DD_API_KEY"),
+        # `DD_API_TOKEN` is the variable the dd-reporting tool uses; accepting
+        # it here means users migrating to `dd report` don't need to rename
+        # their `.env`. `DD_CLI_API_KEY` still takes precedence (first wins).
+        validation_alias=AliasChoices("DD_CLI_API_KEY", "DD_API_KEY", "DD_API_TOKEN"),
     )
     ssl_verify: bool | None = Field(
         default=None,
