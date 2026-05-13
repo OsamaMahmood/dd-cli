@@ -69,7 +69,10 @@ docs = [
     "mkdocstrings[python]>=0.25",
 ]
 client-gen = [
-    "openapi-python-client>=0.21",
+    # 0.28.4 lifted the typer cap to <0.26, which is compatible with the
+    # typer>=0.12 that dd-cli's core install pulls (typer 0.25.x). Older
+    # client-gen pins resolve to typer<0.25 and conflict at install time.
+    "openapi-python-client>=0.28.4",
 ]
 
 [project.urls]
